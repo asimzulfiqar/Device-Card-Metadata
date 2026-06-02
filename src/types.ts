@@ -1,6 +1,12 @@
 export type LayoutMode = 'single' | 'grid';
-export type CardLayout = 'compact' | 'detailed';
+export type CardLayout = 'summary' | 'compact' | 'detailed';
 export type CardOrientation = 'vertical' | 'horizontal';
+export type CardDensity = 'compact' | 'comfortable' | 'spacious';
+export type CardTheme = 'neutral' | 'elevated' | 'tinted' | 'minimal' | 'light' | 'emphasis';
+export type MetricStyle = 'grid' | 'list' | 'tiles';
+export type LogoPlacement = 'header-left' | 'header-right';
+export type StatusPlacement = 'header' | 'below-title' | 'footer';
+export type AccentStyle = 'none' | 'top' | 'left';
 export type BuiltInIcon = 'device' | 'server' | 'cloud' | 'wifi' | 'battery' | 'database';
 export type StatusOperator = 'equals' | 'contains' | 'lt' | 'lte' | 'gt' | 'gte';
 
@@ -56,10 +62,15 @@ export interface DeviceCardOptions {
   rowIndex: number;
   layout: CardLayout;
   orientation: CardOrientation;
+  density: CardDensity;
+  metricStyle: MetricStyle;
+  logoPlacement: LogoPlacement;
+  statusPlacement: StatusPlacement;
   maxColumns: number;
   minCardWidth: number;
   actions: CardAction[];
-  cardTheme: 'light' | 'neutral' | 'emphasis';
+  cardTheme: CardTheme;
+  accentStyle: AccentStyle;
   background: 'default' | 'subtle' | 'none';
   border: 'none' | 'subtle' | 'strong';
   radius: 'small' | 'medium' | 'large';

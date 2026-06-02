@@ -20,6 +20,13 @@
           { "operator": "equals", "value": "WARN", "label": "Warning", "color": "yellow" }
         ],
         "mode": "single",
+        "layout": "detailed",
+        "density": "spacious",
+        "metricStyle": "tiles",
+        "logoPlacement": "header-left",
+        "statusPlacement": "below-title",
+        "cardTheme": "tinted",
+        "accentStyle": "left",
         "showLogo": true,
         "staticIcon": "device"
       }

@@ -76,6 +76,19 @@ const getStyles = (theme: ReturnType<typeof useTheme2>) => ({
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
     margin-top: ${theme.spacing(1.5)};
   `,
+  metricList: css`
+    grid-template-columns: 1fr;
+  `,
+  metricListItem: css`
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+  `,
+  metricTile: css`
+    background: ${theme.colors.background.secondary};
+    border-radius: ${theme.shape.radius.default};
+    padding: ${theme.spacing(1)};
+  `,
   metricValue: css`
     font-size: 1.15em;
     font-weight: ${theme.typography.fontWeightMedium};
@@ -89,6 +102,9 @@ const getStyles = (theme: ReturnType<typeof useTheme2>) => ({
     gap: 4px;
     padding: 2px 7px;
     white-space: nowrap;
+  `,
+  statusBelow: css`
+    margin-top: ${theme.spacing(0.5)};
   `,
   logo: css`
     align-items: center;
@@ -113,6 +129,19 @@ const getStyles = (theme: ReturnType<typeof useTheme2>) => ({
     margin-top: auto;
     padding-top: ${theme.spacing(1.5)};
   `,
+  footerGroup: css`
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: ${theme.spacing(1)};
+  `,
+  staleDot: css`
+    border-radius: 50%;
+    display: inline-block;
+    height: 8px;
+    margin-right: ${theme.spacing(0.5)};
+    width: 8px;
+  `,
   link: css`
     color: ${theme.colors.text.link};
     font-size: 12px;
@@ -134,11 +163,14 @@ export const DeviceCardPanel = ({ options, data }: PanelProps<DeviceCardOptions>
   const visibleRows = option(options.mode, 'grid') === 'single' ? rows.slice(option(options.rowIndex, 0), option(options.rowIndex, 0) + 1) : rows;
   const radius = { small: 2, medium: 6, large: 12 }[option(options.radius, 'medium')];
   const borderWidth = { none: 0, subtle: 1, strong: 2 }[option(options.border, 'subtle')];
+  const cardTheme = option(options.cardTheme, 'neutral');
   const background =
     option(options.background, 'default') === 'none'
       ? 'transparent'
-      : option(options.cardTheme, 'neutral') === 'emphasis'
+      : cardTheme === 'tinted' || cardTheme === 'emphasis'
         ? theme.colors.primary.transparent
+        : cardTheme === 'minimal'
+          ? 'transparent'
         : option(options.background, 'default') === 'subtle'
           ? theme.colors.background.secondary
           : theme.colors.background.primary;
@@ -164,35 +196,54 @@ export const DeviceCardPanel = ({ options, data }: PanelProps<DeviceCardOptions>
           const dynamicLogo = text(values[options.logoField]);
           const logoIsUrl = /^https?:\/\//i.test(dynamicLogo);
           const logoIcon = dynamicLogo in iconNames ? dynamicLogo as keyof typeof iconNames : option(options.staticIcon, 'device');
-          const metrics = (options.metrics ?? []).slice(0, option(options.layout, 'detailed') === 'compact' ? 3 : 6);
+          const layout = option(options.layout, 'detailed');
+          const density = option(options.density, 'comfortable');
+          const metricStyle = option(options.metricStyle, 'grid');
+          const statusPlacement = option(options.statusPlacement, 'header');
+          const accentStyle = option(options.accentStyle, 'none');
+          const metrics = (options.metrics ?? []).slice(0, layout === 'summary' ? 2 : layout === 'compact' ? 3 : 6);
+          const shadows = [
+            cardTheme === 'elevated' ? `0 4px 14px ${theme.colors.background.canvas}` : '',
+            accentStyle === 'top' ? `inset 0 3px 0 ${statusColor}` : '',
+            accentStyle === 'left' ? `inset 3px 0 0 ${statusColor}` : '',
+          ].filter(Boolean).join(', ');
+          const logo = option(options.showLogo, true) && <div className={styles.logo}>{logoIsUrl ? <img className={styles.image} src={dynamicLogo} alt="" /> : <Icon name={iconNames[logoIcon] as never} size="xl" />}</div>;
+          const status = options.statusField && <span className={styles.pill} style={{ background: statusColor }}>{rule?.icon && <Icon name={iconNames[rule.icon] as never} size="xs" />}{rule?.label || text(statusValue) || 'Unknown'}</span>;
           return (
             <article
               className={cx(styles.card, css`
                 background: ${background};
                 border: ${borderWidth}px solid ${theme.colors.border.weak};
                 border-radius: ${radius}px;
+                box-shadow: ${shadows || 'none'};
                 flex-direction: ${option(options.orientation, 'vertical') === 'horizontal' ? 'row' : 'column'};
                 font-size: ${{ small: 12, normal: 14, large: 16 }[option(options.typography, 'normal')]}px;
+                gap: ${theme.spacing({ compact: 1, comfortable: 1.5, spacious: 2 }[density])};
+                min-height: ${{ compact: 116, comfortable: 148, spacious: 184 }[density]}px;
+                padding: ${theme.spacing({ compact: 1, comfortable: 1.5, spacious: 2 }[density])};
               `)}
               key={`${text(values[idField])}-${index}`}
             >
               <div className={styles.heading}>
-                {option(options.showLogo, true) && <div className={styles.logo}>{logoIsUrl ? <img className={styles.image} src={dynamicLogo} alt="" /> : <Icon name={iconNames[logoIcon] as never} size="xl" />}</div>}
+                {option(options.logoPlacement, 'header-left') === 'header-left' && logo}
                 <div className={styles.body}>
                   <div className={styles.title}>{text(values[options.titleField] || values[idField])}</div>
                   {options.subtitleField && <div className={styles.muted}>{text(values[options.subtitleField])}</div>}
+                  {statusPlacement === 'below-title' && <div className={styles.statusBelow}>{status}</div>}
                 </div>
-                {options.statusField && <span className={styles.pill} style={{ background: statusColor }}>{rule?.icon && <Icon name={iconNames[rule.icon] as never} size="xs" />}{rule?.label || text(statusValue) || 'Unknown'}</span>}
+                {statusPlacement === 'header' && status}
+                {option(options.logoPlacement, 'header-left') === 'header-right' && logo}
               </div>
               <div className={styles.body}>
-                {option(options.layout, 'detailed') === 'detailed' && options.descriptionField && <div className={styles.description}>{text(values[options.descriptionField])}</div>}
-                {metrics.length > 0 && <div className={styles.metrics}>{metrics.map((metric) => <div key={metric.field}><div className={styles.muted}>{metric.label || metric.field}</div><div className={styles.metricValue}>{formatMetric(values[metric.field], metric, fieldByName(frame, metric.field))}</div></div>)}</div>}
+                {layout === 'detailed' && options.descriptionField && <div className={styles.description}>{text(values[options.descriptionField])}</div>}
+                {metrics.length > 0 && <div className={cx(styles.metrics, metricStyle === 'list' && styles.metricList)}>{metrics.map((metric) => <div className={cx(metricStyle === 'list' && styles.metricListItem, metricStyle === 'tiles' && styles.metricTile)} key={metric.field}><div className={styles.muted}>{metric.label || metric.field}</div><div className={styles.metricValue}>{formatMetric(values[metric.field], metric, fieldByName(frame, metric.field))}</div></div>)}</div>}
                 <div className={styles.footer}>
-                  <span className={styles.muted}>
-                    {option(options.showStaleness, true) && stale && <span style={{ color: resolveColor(stale.color, theme) }}>● </span>}
-                    {options.lastSeenField && <>Last seen {relativeTime(values[options.lastSeenField])}</>}
+                  <span className={cx(styles.muted, styles.footerGroup)}>
+                    {statusPlacement === 'footer' && status}
+                    {option(options.showStaleness, true) && stale && <span className={styles.staleDot} style={{ background: resolveColor(stale.color, theme) }} />}
+                    {options.lastSeenField && <span>Last seen {relativeTime(values[options.lastSeenField])}</span>}
                   </span>
-                  <span>{(options.actions ?? []).map((action) => <a className={styles.link} href={substituteUrl(action.url, values)} key={action.label} target={action.newTab ? '_blank' : '_self'} rel={action.newTab ? 'noreferrer' : undefined}>{action.label}</a>)}</span>
+                  <span className={styles.footerGroup}>{(options.actions ?? []).map((action) => <a className={styles.link} href={substituteUrl(action.url, values)} key={action.label} target={action.newTab ? '_blank' : '_self'} rel={action.newTab ? 'noreferrer' : undefined}>{action.label}</a>)}</span>
                 </div>
                 {derived.errors.length > 0 && <span className={styles.muted} title={derived.errors.join('\n')}>Derived field warning</span>}
               </div>

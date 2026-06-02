@@ -4,13 +4,15 @@ Device Card Panel renders query rows as clean, reusable entity cards for devices
 
 ## Features
 
-- Single-card and responsive grid layouts.
+- Single-card and responsive grid layouts with summary, compact, and detailed cards.
 - Guided field mapping for title, subtitle, description, status, last seen, and dynamic logo fields.
 - Configurable metric rows with unit and decimal overrides.
 - Derived fields with a deliberately small expression language.
 - Status pills, threshold rules, and independent freshness indicators.
 - Built-in icons, dynamic image URLs, and field-aware card actions.
-- Theme-aware styling for Grafana light and dark modes.
+- Theme-aware neutral, elevated, tinted, and minimal presets for Grafana light and dark modes.
+- Compact, comfortable, and spacious density options with grid, list, or tile metrics.
+- Configurable logo placement, status placement, and status-colored accent bars.
 
 ## Quick Start
 
@@ -49,6 +51,12 @@ Card action URLs substitute encoded values from the row:
 d/device-detail?var-device_id={device_id}
 https://cmms.example.com/device/{id}
 ```
+
+## Layout And Styling
+
+The **Layout** options let dashboard authors choose summary, compact, or detailed cards; vertical or horizontal orientation; card density; and grid, list, or tile metrics.
+
+The **Style** options include neutral, elevated, tinted, and minimal visual presets. A status-colored accent can be shown as a top or left bar. Logo and status placement remain configurable independently, which makes the same card useful for dense operations grids and larger overview panels.
 
 ## Development
 
