@@ -46,3 +46,7 @@ ci/
 .idea
 
 .eslintcache
+
+# Local packaging and validation artifacts
+/.validation-package/
+/asimzulfiqar-devicecard-panel-*.zip
