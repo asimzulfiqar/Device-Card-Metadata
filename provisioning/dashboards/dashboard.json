@@ -1,0 +1,70 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "panels": [
+    {
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "gridPos": { "h": 12, "w": 16, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "idField": "device_id",
+        "titleField": "device_id",
+        "subtitleField": "owner",
+        "descriptionField": "location",
+        "statusField": "status",
+        "lastSeenField": "last_seen",
+        "metrics": [
+          { "field": "battery", "label": "Battery", "unit": "percent", "decimals": 0 },
+          { "field": "temperature", "label": "Temperature", "unit": "celsius", "decimals": 1 }
+        ],
+        "statusRules": [
+          { "operator": "equals", "value": "OK", "label": "Healthy", "color": "green" },
+          { "operator": "equals", "value": "WARN", "label": "Warning", "color": "yellow" }
+        ],
+        "actions": [{ "label": "Details", "url": "d/device-detail?var-device_id={device_id}" }],
+        "mode": "grid",
+        "layout": "detailed",
+        "orientation": "vertical",
+        "maxColumns": 3,
+        "minCardWidth": 220,
+        "showLogo": true,
+        "staticIcon": "device",
+        "showStaleness": true,
+        "freshMinutes": 15,
+        "staleMinutes": 60,
+        "fallbackStatusColor": "gray",
+        "cardTheme": "neutral",
+        "background": "default",
+        "border": "subtle",
+        "radius": "medium",
+        "typography": "normal"
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "refId": "A",
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"schema\":{\"fields\":[{\"name\":\"device_id\",\"type\":\"string\"},{\"name\":\"owner\",\"type\":\"string\"},{\"name\":\"location\",\"type\":\"string\"},{\"name\":\"status\",\"type\":\"string\"},{\"name\":\"battery\",\"type\":\"number\"},{\"name\":\"temperature\",\"type\":\"number\"},{\"name\":\"last_seen\",\"type\":\"time\"}]},\"data\":{\"values\":[[\"sensor-001\",\"gateway-002\",\"pump-003\"],[\"Facilities\",\"Platform\",\"Operations\"],[\"Berlin plant\",\"Edge network\",\"Cooling loop\"],[\"OK\",\"OK\",\"WARN\"],[92,67,34],[21.8,48.2,63.4],[1760000000000,1760000000000,1760000000000]]}}]"
+        }
+      ],
+      "title": "Device fleet",
+      "type": "asimzulfiqar-devicecard-panel"
+    },
+    {
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+      "id": 2,
+      "options": { "idField": "device_id", "titleField": "device_id", "mode": "single", "rowIndex": 0 },
+      "targets": [{ "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" }, "refId": "A", "scenarioId": "no_data_points" }],
+      "title": "Empty-state example",
+      "type": "asimzulfiqar-devicecard-panel"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["device-card-panel"],
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "Device Card Panel examples",
+  "uid": "device-card-panel-examples",
+  "version": 1
+}

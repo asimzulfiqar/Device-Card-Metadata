@@ -1,0 +1,24 @@
+name: Latest Grafana API compatibility check
+on: [pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  compatibilitycheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: grafana/plugin-actions/is-compatible@is-compatible/v1.0.2
+        with:
+          module: src/module.ts
+          comment-pr: "no"
+          fail-if-incompatible: "yes"

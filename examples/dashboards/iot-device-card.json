@@ -1,0 +1,29 @@
+{
+  "title": "IoT device card",
+  "panels": [
+    {
+      "title": "Sensor overview",
+      "type": "asimzulfiqar-devicecard-panel",
+      "options": {
+        "idField": "device_id",
+        "titleField": "device_id",
+        "subtitleField": "owner",
+        "descriptionField": "location",
+        "statusField": "status",
+        "lastSeenField": "last_seen",
+        "metrics": [
+          { "field": "battery", "label": "Battery", "unit": "percent", "decimals": 0 },
+          { "field": "temperature", "label": "Temperature", "unit": "celsius", "decimals": 1 }
+        ],
+        "statusRules": [
+          { "operator": "equals", "value": "OK", "label": "Healthy", "color": "green" },
+          { "operator": "equals", "value": "WARN", "label": "Warning", "color": "yellow" }
+        ],
+        "mode": "single",
+        "showLogo": true,
+        "staticIcon": "device"
+      }
+    }
+  ],
+  "schemaVersion": 39
+}

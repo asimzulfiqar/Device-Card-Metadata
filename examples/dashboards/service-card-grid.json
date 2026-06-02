@@ -1,0 +1,32 @@
+{
+  "title": "Service card grid",
+  "panels": [
+    {
+      "title": "Service health",
+      "type": "asimzulfiqar-devicecard-panel",
+      "options": {
+        "idField": "service",
+        "titleField": "service",
+        "subtitleField": "team",
+        "descriptionField": "region",
+        "statusField": "health",
+        "metrics": [
+          { "field": "latency_ms", "label": "Latency", "unit": "ms", "decimals": 0 },
+          { "field": "error_rate", "label": "Errors", "unit": "percentunit", "decimals": 2 }
+        ],
+        "customFields": [
+          { "name": "summary", "label": "Summary", "expression": "concat(team, \" - \", region)" }
+        ],
+        "statusRules": [
+          { "operator": "equals", "value": "healthy", "label": "Healthy", "color": "green" },
+          { "operator": "equals", "value": "degraded", "label": "Degraded", "color": "yellow" }
+        ],
+        "mode": "grid",
+        "maxColumns": 4,
+        "showLogo": true,
+        "staticIcon": "server"
+      }
+    }
+  ],
+  "schemaVersion": 39
+}

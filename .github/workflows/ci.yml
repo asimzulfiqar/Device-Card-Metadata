@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test:ci
+      - run: npm run build
+      - name: Validate plugin metadata
+        run: |
+          mv dist asimzulfiqar-devicecard-panel
+          zip asimzulfiqar-devicecard-panel-1.0.0.zip asimzulfiqar-devicecard-panel -r
+          docker run --pull=always -v "$PWD/asimzulfiqar-devicecard-panel-1.0.0.zip:/archive.zip" grafana/plugin-validator-cli -analyzer=metadatavalid /archive.zip
