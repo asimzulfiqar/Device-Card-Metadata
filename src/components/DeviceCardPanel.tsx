@@ -6,6 +6,7 @@ import { DeviceCardOptions } from '../types';
 import {
   fieldByName,
   formatMetric,
+  formatMetadataValue,
   frameRows,
   iconNames,
   isTimeField,
@@ -83,6 +84,54 @@ const getStyles = (theme: ReturnType<typeof useTheme2>) => ({
     gap: ${theme.spacing(1)};
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     margin-top: ${theme.spacing(1)};
+  `,
+  metadataSheet: css`
+    background: ${theme.colors.background.primary};
+    border: 1px solid ${theme.colors.border.weak};
+    border-radius: ${theme.shape.radius.default};
+    display: grid;
+    overflow: hidden;
+  `,
+  metadataSection: css`
+    border-right: 1px solid ${theme.colors.border.weak};
+    min-width: 0;
+    padding: ${theme.spacing(2)};
+    &:last-child { border-right: 0; }
+  `,
+  metadataHeading: css`
+    border-bottom: 1px solid ${theme.colors.border.medium};
+    color: ${theme.colors.text.primary};
+    font-weight: ${theme.typography.fontWeightMedium};
+    margin-bottom: ${theme.spacing(1.5)};
+    padding-bottom: ${theme.spacing(1)};
+  `,
+  metadataSubheading: css`
+    border-bottom: 1px solid ${theme.colors.border.weak};
+    font-weight: ${theme.typography.fontWeightMedium};
+    margin-top: ${theme.spacing(2)};
+    padding-bottom: ${theme.spacing(0.75)};
+    text-decoration: underline;
+  `,
+  metadataRow: css`
+    align-items: baseline;
+    border-bottom: 1px solid ${theme.colors.border.weak};
+    display: flex;
+    gap: ${theme.spacing(1)};
+    justify-content: space-between;
+    min-height: 36px;
+    padding: ${theme.spacing(0.75, 0)};
+  `,
+  metadataLabel: css`
+    color: ${theme.colors.text.secondary};
+    min-width: 0;
+  `,
+  metadataValue: css`
+    color: ${theme.colors.text.primary};
+    font-weight: ${theme.typography.fontWeightMedium};
+    text-align: right;
+  `,
+  metadataHighlight: css`
+    color: ${theme.colors.primary.text};
   `,
   card: css`
     display: flex;
@@ -281,6 +330,20 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
   }
   if (!idField || !fieldByName(frame, idField)) {
     return <div className={styles.empty}><div><Alert title="Map an Entity ID field" severity="info">Your query returned {rows.length} row(s). Use the setup assistant or open Field mapping in the panel options.</Alert><Button icon="cog" onClick={applySetup}>Apply suggested mappings</Button></div></div>;
+  }
+  if (options.layout === 'metadata') {
+    const values = withCustomFields(rows[option(options.rowIndex, 0)] ?? rows[0], options.customFields ?? []).values;
+    const metadataMinWidth = Math.max(220, Math.floor(1040 / Math.max(1, option(options.metadataColumns, 4))));
+    return <div className={styles.wrapper}>
+      <div className={styles.metadataSheet} style={{ gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${metadataMinWidth}px), 1fr))` }}>
+        {(options.metadataSections ?? []).map((section, sectionIndex) => <section className={styles.metadataSection} key={`${section.title}-${sectionIndex}`}>
+          <div className={styles.metadataHeading}>{section.title}</div>
+          {section.rows.map((row, rowIndex) => row.kind === 'subheading'
+            ? <div className={styles.metadataSubheading} key={`${row.label}-${rowIndex}`}>{row.label}</div>
+            : <div className={styles.metadataRow} key={`${row.field}-${rowIndex}`}><span className={styles.metadataLabel}>{row.label || row.field}</span><span className={cx(styles.metadataValue, row.highlight && styles.metadataHighlight)}>{formatMetadataValue(values[row.field ?? ''], row, fieldByName(frame, row.field ?? ''))}</span></div>)}
+        </section>)}
+      </div>
+    </div>;
   }
 
   return (

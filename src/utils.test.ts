@@ -1,5 +1,5 @@
 import { FieldType } from '@grafana/data';
-import { compositeStatus, evaluateExpression, formatMetric, relativeTime, statusFor, substituteUrl, suggestMappings, timestampWarning, withCustomFields } from './utils';
+import { compositeStatus, evaluateExpression, formatMetadataValue, formatMetric, relativeTime, statusFor, substituteUrl, suggestMappings, timestampWarning, withCustomFields } from './utils';
 
 describe('device card utilities', () => {
   it('evaluates safe derived expressions', () => {
@@ -49,5 +49,10 @@ describe('device card utilities', () => {
   it('detects second-based timestamps', () => {
     expect(timestampWarning(1760000000)).toContain('seconds');
     expect(timestampWarning(1760000000000)).toBeUndefined();
+  });
+
+  it('formats metadata suffixes and missing values', () => {
+    expect(formatMetadataValue(246.7, { kind: 'field', field: 'level', label: 'Level', unit: 'm ü. NHN', decimals: 1 })).toBe('246.7 m ü. NHN');
+    expect(formatMetadataValue(Number.NaN, { kind: 'field', field: 'battery', label: 'Battery', emptyText: '-' })).toBe('-');
   });
 });

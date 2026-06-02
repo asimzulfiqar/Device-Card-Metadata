@@ -1,5 +1,5 @@
 import { DataFrame, Field, FieldType, getValueFormat, GrafanaTheme2 } from '@grafana/data';
-import { BuiltInIcon, CompositeRule, CustomField, DeviceCardOptions, MetricMapping, SetupProfile, StatusRule } from './types';
+import { BuiltInIcon, CompositeRule, CustomField, DeviceCardOptions, MetadataRow, MetricMapping, SetupProfile, StatusRule } from './types';
 
 export type CardValues = Record<string, unknown>;
 
@@ -147,7 +147,7 @@ export function compositeStatus(values: CardValues, rules: CompositeRule[]) {
 }
 
 export function formatMetric(value: unknown, mapping: MetricMapping, field?: Field): string {
-  if (value === null || value === undefined || value === '') {
+  if (value === null || value === undefined || value === '' || (typeof value === 'number' && Number.isNaN(value))) {
     return '-';
   }
   if (typeof value !== 'number') {
@@ -160,6 +160,14 @@ export function formatMetric(value: unknown, mapping: MetricMapping, field?: Fie
     return `${display.text}${display.suffix ? ` ${display.suffix}` : ''}`;
   }
   return unit ? getValueFormat(unit)(value, decimals).text : value.toFixed(decimals ?? 2).replace(/\.?0+$/, '');
+}
+
+export function formatMetadataValue(value: unknown, row: MetadataRow, field?: Field): string {
+  if (value === null || value === undefined || value === '' || (typeof value === 'number' && Number.isNaN(value))) {
+    return row.emptyText || '-';
+  }
+  const formatted = formatMetric(value, { field: row.field ?? '', decimals: row.decimals }, field);
+  return row.unit ? `${formatted} ${row.unit}` : formatted;
 }
 
 export function substituteUrl(template: string, values: CardValues): string {

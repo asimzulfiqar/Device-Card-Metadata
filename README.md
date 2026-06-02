@@ -17,6 +17,7 @@ Device Card Panel renders query rows as clean, reusable entity cards for devices
 - Composite health checks that surface the worst failing metric and reason.
 - Field selectors populated from live query columns and configured derived fields.
 - Setup profiles, conservative auto-mapping suggestions, and an in-panel data diagnostics drawer.
+- A metadata-detail layout for grouped asset sheets with domain-specific labels and units.
 
 ## Quick Start
 
@@ -78,6 +79,17 @@ If more than one check fails, the card uses the most severe matched color and ex
 When a query returns rows but the required entity ID has not been mapped, the panel offers an **Apply suggested mappings** button. Suggestions only fill empty settings and look for common column names such as `device_id`, `asset_id`, `service`, `host`, `status`, and `last_seen`.
 
 Choose an IoT device, service-health, or asset-inventory setup profile before applying suggestions. The diagnostics drawer remains available after setup and shows frames, row counts, field names, field types, multi-frame guidance, and suspicious timestamp units.
+
+## Metadata Detail Layout
+
+Use **Metadata detail** when a single selected asset needs a structured detail sheet rather than a fleet card. Add responsive sections such as identification, meter, probe, and radio-unit details. Each section supports:
+
+- Metadata rows with a source field and localized display label.
+- Subsection headings such as `Letzte Messwerte`.
+- Literal unit suffixes such as `m³` or `m ü. NHN`.
+- Decimal formatting, highlighted values, and missing-value fallback text.
+
+The provisioned dashboard includes a German water-monitoring example based on one query row.
 
 ## Layout And Styling
 

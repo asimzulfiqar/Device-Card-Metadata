@@ -2,6 +2,7 @@ import { PanelPlugin } from '@grafana/data';
 import { DeviceCardPanel } from './components/DeviceCardPanel';
 import { ArrayEditor } from './components/ArrayEditor';
 import { FieldSelectorEditor } from './components/FieldSelectorEditor';
+import { MetadataSectionsEditor } from './components/MetadataSectionsEditor';
 import { DeviceCardOptions } from './types';
 
 const iconOptions = [
@@ -39,7 +40,7 @@ export const plugin = new PanelPlugin<DeviceCardOptions>(DeviceCardPanel)
     .addSelect({ path: 'staticIcon', name: 'Fallback icon', category: ['Logo'], defaultValue: 'device', settings: { options: iconOptions } })
     .addRadio({ path: 'mode', name: 'Card mode', category: ['Layout'], defaultValue: 'grid', settings: { options: [{ label: 'Grid', value: 'grid' }, { label: 'Single card', value: 'single' }] } })
     .addNumberInput({ path: 'rowIndex', name: 'Row index', category: ['Layout'], defaultValue: 0, showIf: (config) => config.mode === 'single' })
-    .addRadio({ path: 'layout', name: 'Detail level', category: ['Layout'], defaultValue: 'detailed', settings: { options: [{ label: 'Summary', value: 'summary' }, { label: 'Compact', value: 'compact' }, { label: 'Detailed', value: 'detailed' }] } })
+    .addRadio({ path: 'layout', name: 'Detail level', category: ['Layout'], defaultValue: 'detailed', settings: { options: [{ label: 'Summary', value: 'summary' }, { label: 'Compact', value: 'compact' }, { label: 'Detailed', value: 'detailed' }, { label: 'Metadata detail', value: 'metadata' }] } })
     .addRadio({ path: 'orientation', name: 'Orientation', category: ['Layout'], defaultValue: 'vertical', settings: { options: [{ label: 'Vertical', value: 'vertical' }, { label: 'Horizontal', value: 'horizontal' }] } })
     .addSelect({ path: 'density', name: 'Card density', category: ['Layout'], defaultValue: 'comfortable', settings: { options: [{ label: 'Compact', value: 'compact' }, { label: 'Comfortable', value: 'comfortable' }, { label: 'Spacious', value: 'spacious' }] } })
     .addSelect({ path: 'metricStyle', name: 'Metric presentation', category: ['Layout'], defaultValue: 'grid', settings: { options: [{ label: 'Grid', value: 'grid' }, { label: 'List', value: 'list' }, { label: 'Tiles', value: 'tiles' }] } })
@@ -52,6 +53,8 @@ export const plugin = new PanelPlugin<DeviceCardOptions>(DeviceCardPanel)
     .addRadio({ path: 'sortDirection', name: 'Sort direction', category: ['Fleet controls'], defaultValue: 'desc', settings: { options: [{ label: 'Ascending', value: 'asc' }, { label: 'Descending', value: 'desc' }] } })
     .addCustomEditor({ id: 'sortMetricField', path: 'sortMetricField', name: 'Sort metric field', category: ['Fleet controls'], showIf: (config) => config.sortBy === 'metric', editor: FieldSelectorEditor })
     .addNumberInput({ path: 'pageSize', name: 'Cards per page', category: ['Fleet controls'], defaultValue: 24, settings: { min: 1, max: 500 } })
+    .addNumberInput({ path: 'metadataColumns', name: 'Maximum columns', category: ['Metadata detail'], defaultValue: 4, settings: { min: 1, max: 6 } })
+    .addCustomEditor({ id: 'metadataSections', path: 'metadataSections', name: 'Sections and rows', category: ['Metadata detail'], editor: MetadataSectionsEditor, defaultValue: [] })
     .addSelect({ path: 'logoPlacement', name: 'Logo placement', category: ['Logo'], defaultValue: 'header-left', settings: { options: [{ label: 'Header left', value: 'header-left' }, { label: 'Header right', value: 'header-right' }] } })
     .addSelect({ path: 'statusPlacement', name: 'Status placement', category: ['Status'], defaultValue: 'header', settings: { options: [{ label: 'Header', value: 'header' }, { label: 'Below title', value: 'below-title' }, { label: 'Footer', value: 'footer' }] } })
     .addCustomEditor({ id: 'actions', path: 'actions', name: 'Card actions', category: ['Actions'], editor: ArrayEditor, defaultValue: [], settings: { kind: 'actions' } })

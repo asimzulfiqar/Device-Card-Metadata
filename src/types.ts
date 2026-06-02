@@ -1,5 +1,5 @@
 export type LayoutMode = 'single' | 'grid';
-export type CardLayout = 'summary' | 'compact' | 'detailed';
+export type CardLayout = 'summary' | 'compact' | 'detailed' | 'metadata';
 export type CardOrientation = 'vertical' | 'horizontal';
 export type CardDensity = 'compact' | 'comfortable' | 'spacious';
 export type CardTheme = 'neutral' | 'elevated' | 'tinted' | 'minimal' | 'light' | 'emphasis';
@@ -49,6 +49,21 @@ export interface CardAction {
   includeTimeRange?: boolean;
 }
 
+export interface MetadataRow {
+  kind: 'field' | 'subheading';
+  field?: string;
+  label: string;
+  unit?: string;
+  decimals?: number;
+  highlight?: boolean;
+  emptyText?: string;
+}
+
+export interface MetadataSection {
+  title: string;
+  rows: MetadataRow[];
+}
+
 export interface DeviceCardOptions {
   idField: string;
   titleField: string;
@@ -87,6 +102,8 @@ export interface DeviceCardOptions {
   sortDirection: SortDirection;
   sortMetricField: string;
   pageSize: number;
+  metadataSections: MetadataSection[];
+  metadataColumns: number;
   setupProfile: SetupProfile;
   showDiagnostics: boolean;
   cardTheme: CardTheme;

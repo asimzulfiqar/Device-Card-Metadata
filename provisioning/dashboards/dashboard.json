@@ -76,6 +76,80 @@
       "targets": [{ "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" }, "refId": "A", "scenarioId": "no_data_points" }],
       "title": "Empty-state example",
       "type": "asimzulfiqar-devicecard-panel"
+    },
+    {
+      "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+      "gridPos": { "h": 15, "w": 24, "x": 0, "y": 12 },
+      "id": 3,
+      "options": {
+        "idField": "objektkennzahl",
+        "titleField": "brunnenbezeichnung",
+        "mode": "single",
+        "layout": "metadata",
+        "rowIndex": 0,
+        "metadataColumns": 4,
+        "metadataSections": [
+          {
+            "title": "Identifikation und Lage",
+            "rows": [
+              { "kind": "field", "field": "objektkennzahl", "label": "Objektkennzahl" },
+              { "kind": "field", "field": "brunnenbezeichnung", "label": "Brunnenbezeichnung" },
+              { "kind": "field", "field": "betreiber", "label": "Betreiber" },
+              { "kind": "field", "field": "koordinaten", "label": "Koordinaten", "highlight": true },
+              { "kind": "field", "field": "flurstueck", "label": "Flurstück" },
+              { "kind": "field", "field": "gemarkung", "label": "Gemarkung" },
+              { "kind": "field", "field": "gemeinde", "label": "Gemeinde" },
+              { "kind": "field", "field": "landkreis", "label": "Landkreis" }
+            ]
+          },
+          {
+            "title": "Wasserzähler",
+            "rows": [
+              { "kind": "field", "field": "zaehler_modell", "label": "Modell" },
+              { "kind": "field", "field": "dn", "label": "Dn" },
+              { "kind": "field", "field": "zaehler_einbaudatum", "label": "Einbaudatum" },
+              { "kind": "field", "field": "zaehler_geraetenummer", "label": "Gerätenummer" },
+              { "kind": "subheading", "label": "Letzte Messwerte" },
+              { "kind": "field", "field": "entnahme_12h", "label": "Wasserentnahmen letzte 12h", "unit": "m³", "decimals": 1 },
+              { "kind": "field", "field": "entnahme_24h", "label": "Wasserentnahmen letzte 24h", "unit": "m³", "decimals": 1 },
+              { "kind": "field", "field": "gesamtentnahme", "label": "Erfolgte Gesamtentnahme im Bewilligungszeitraum", "unit": "m³", "decimals": 0 },
+              { "kind": "field", "field": "erlaubte_entnahme", "label": "Erlaubte Gesamtentnahme im Bewilligungszeitraum", "unit": "m³", "decimals": 0, "highlight": true },
+              { "kind": "field", "field": "verfuegbare_entnahme", "label": "Noch verfügbare Entnahmemenge im Bewilligungszeitraum", "unit": "m³", "decimals": 0 },
+              { "kind": "field", "field": "zaehlerstand", "label": "Zählerstand", "unit": "m³", "decimals": 0 }
+            ]
+          },
+          {
+            "title": "Pegelsonde",
+            "rows": [
+              { "kind": "field", "field": "sonde_modell", "label": "Modell" },
+              { "kind": "field", "field": "tiefe", "label": "Tiefe", "unit": "m", "decimals": 1 },
+              { "kind": "field", "field": "sonde_einbaudatum", "label": "Einbaudatum" },
+              { "kind": "field", "field": "sonde_geraetenummer", "label": "Gerätenummer" },
+              { "kind": "field", "field": "mindestwasserstand", "label": "Vorgegebener Mindestwasserstand", "unit": "m ü. NHN", "decimals": 1 },
+              { "kind": "subheading", "label": "Letzte Messwerte" },
+              { "kind": "field", "field": "pegelstand", "label": "Letzter Pegelstand", "unit": "m ü. NHN", "decimals": 1, "highlight": true }
+            ]
+          },
+          {
+            "title": "Funkeinheit",
+            "rows": [
+              { "kind": "field", "field": "funk_modell", "label": "Modell" },
+              { "kind": "field", "field": "funk_geraetenummer", "label": "Gerätenummer" },
+              { "kind": "field", "field": "batteriestand", "label": "Batteriestand", "unit": "%", "decimals": 0, "emptyText": "-" }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
+          "refId": "A",
+          "scenarioId": "raw_frame",
+          "rawFrameContent": "[{\"schema\":{\"fields\":[{\"name\":\"objektkennzahl\",\"type\":\"string\"},{\"name\":\"brunnenbezeichnung\",\"type\":\"string\"},{\"name\":\"betreiber\",\"type\":\"string\"},{\"name\":\"koordinaten\",\"type\":\"string\"},{\"name\":\"flurstueck\",\"type\":\"string\"},{\"name\":\"gemarkung\",\"type\":\"string\"},{\"name\":\"gemeinde\",\"type\":\"string\"},{\"name\":\"landkreis\",\"type\":\"string\"},{\"name\":\"zaehler_modell\",\"type\":\"string\"},{\"name\":\"dn\",\"type\":\"number\"},{\"name\":\"zaehler_einbaudatum\",\"type\":\"string\"},{\"name\":\"zaehler_geraetenummer\",\"type\":\"string\"},{\"name\":\"entnahme_12h\",\"type\":\"number\"},{\"name\":\"entnahme_24h\",\"type\":\"number\"},{\"name\":\"gesamtentnahme\",\"type\":\"number\"},{\"name\":\"erlaubte_entnahme\",\"type\":\"number\"},{\"name\":\"verfuegbare_entnahme\",\"type\":\"number\"},{\"name\":\"zaehlerstand\",\"type\":\"number\"},{\"name\":\"sonde_modell\",\"type\":\"string\"},{\"name\":\"tiefe\",\"type\":\"number\"},{\"name\":\"sonde_einbaudatum\",\"type\":\"string\"},{\"name\":\"sonde_geraetenummer\",\"type\":\"string\"},{\"name\":\"mindestwasserstand\",\"type\":\"number\"},{\"name\":\"pegelstand\",\"type\":\"number\"},{\"name\":\"funk_modell\",\"type\":\"string\"},{\"name\":\"funk_geraetenummer\",\"type\":\"string\"},{\"name\":\"batteriestand\",\"type\":\"number\"}]},\"data\":{\"values\":[[\"BR-2026-0042\"],[\"Brunnen Nord\"],[\"Wasserverband Musterregion\"],[\"49.92543   10.03802\"],[\"184/3\"],[\"Musterfeld\"],[\"Musterstadt\"],[\"Musterlandkreis\"],[\"FlowMeter X2\"],[50],[\"2024-03-18\"],[\"WM-88341\"],[12.4],[24.8],[0],[7300],[7300],[0],[\"LevelProbe S1\"],[18.5],[\"2024-03-18\"],[\"PS-41782\"],[244.0],[246.7],[\"LoRaWAN Gateway\"],[\"RF-99103\"],[null]]}}]"
+        }
+      ],
+      "title": "Brunnen-Metadaten",
+      "type": "asimzulfiqar-devicecard-panel"
     }
   ],
   "schemaVersion": 39,
