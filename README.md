@@ -17,7 +17,7 @@ Device Card Panel renders query rows as clean, reusable entity cards for devices
 - Composite health checks that surface the worst failing metric and reason.
 - Field selectors populated from live query columns and configured derived fields.
 - Setup profiles, conservative auto-mapping suggestions, and an in-panel data diagnostics drawer.
-- A metadata-detail layout for grouped asset sheets with domain-specific labels and units.
+- A separate metadata-detail presentation for grouped asset sheets with domain-specific labels and units.
 
 ## Quick Start
 
@@ -82,7 +82,7 @@ Choose an IoT device, service-health, or asset-inventory setup profile before ap
 
 ## Metadata Detail Layout
 
-Use **Metadata detail** when a single selected asset needs a structured detail sheet rather than a fleet card. Add responsive sections such as identification, meter, probe, and radio-unit details. Each section supports:
+Set **Presentation mode** to **Metadata detail** when a single selected asset needs a structured detail sheet rather than a fleet card. The editor hides fleet-only settings and shows the section builder. Add responsive sections such as identification, meter, probe, and radio-unit details. Each section supports:
 
 - Metadata rows with a source field and localized display label.
 - Subsection headings such as `Letzte Messwerte`.
@@ -92,6 +92,8 @@ Use **Metadata detail** when a single selected asset needs a structured detail s
 The provisioned dashboard includes a German water-monitoring example based on one query row.
 
 ## Layout And Styling
+
+Use the top-level **Presentation mode** control to choose **Fleet cards** or **Metadata detail**. The two modes share the same table-row data model, but each mode exposes only its relevant panel settings.
 
 The **Layout** options let dashboard authors choose summary, compact, or detailed cards; vertical or horizontal orientation; card density; and grid, list, or tile metrics.
 

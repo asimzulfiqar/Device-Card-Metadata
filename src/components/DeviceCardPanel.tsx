@@ -263,6 +263,7 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
   const frame = data.series[0];
   const rows = frameRows(frame);
   const idField = options.idField;
+  const metadataMode = options.presentationMode === 'metadata' || (!options.presentationMode && options.layout === 'metadata');
   const lastSeenWarning = options.lastSeenField && !isTimeField(frame, options.lastSeenField);
   const radius = { small: 2, medium: 6, large: 12 }[option(options.radius, 'medium')];
   const borderWidth = { none: 0, subtle: 1, strong: 2 }[option(options.border, 'subtle')];
@@ -331,7 +332,10 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
   if (!idField || !fieldByName(frame, idField)) {
     return <div className={styles.empty}><div><Alert title="Map an Entity ID field" severity="info">Your query returned {rows.length} row(s). Use the setup assistant or open Field mapping in the panel options.</Alert><Button icon="cog" onClick={applySetup}>Apply suggested mappings</Button></div></div>;
   }
-  if (options.layout === 'metadata') {
+  if (metadataMode) {
+    if (!(options.metadataSections ?? []).length) {
+      return <div className={styles.empty}><div><Alert title="Configure metadata sections" severity="info">This panel is using Metadata detail presentation. Open Metadata detail in the panel options, then add sections and rows for the fields you want to display.</Alert></div></div>;
+    }
     const values = withCustomFields(rows[option(options.rowIndex, 0)] ?? rows[0], options.customFields ?? []).values;
     const metadataMinWidth = Math.max(220, Math.floor(1040 / Math.max(1, option(options.metadataColumns, 4))));
     return <div className={styles.wrapper}>
@@ -348,6 +352,7 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
 
   return (
     <div className={styles.wrapper}>
+      {!(options.metrics ?? []).length && !options.subtitleField && !options.descriptionField && !options.statusField && <Alert title="Add fleet card fields" severity="info">This panel is using Fleet cards presentation. Map a title, status, subtitle, description, or metric field to build the card overview.</Alert>}
       {lastSeenWarning && <Alert title="Last seen field is not a time field" severity="warning">Choose a Grafana time field for relative age and staleness.</Alert>}
       {timestampIssue && <Alert title="Check last-seen timestamp units" severity="warning">{timestampIssue}</Alert>}
       <div className={styles.assistant}>

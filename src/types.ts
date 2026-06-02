@@ -1,4 +1,5 @@
 export type LayoutMode = 'single' | 'grid';
+export type PresentationMode = 'fleet' | 'metadata';
 export type CardLayout = 'summary' | 'compact' | 'detailed' | 'metadata';
 export type CardOrientation = 'vertical' | 'horizontal';
 export type CardDensity = 'compact' | 'comfortable' | 'spacious';
@@ -65,6 +66,7 @@ export interface MetadataSection {
 }
 
 export interface DeviceCardOptions {
+  presentationMode: PresentationMode;
   idField: string;
   titleField: string;
   subtitleField: string;

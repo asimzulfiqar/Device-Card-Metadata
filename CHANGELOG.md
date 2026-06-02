@@ -9,3 +9,4 @@
 - Add live field selectors, fleet search, health filters, viewer sorting, grouping, pagination, composite health checks, and time-range-aware drilldowns.
 - Add setup profiles, conservative field auto-mapping, and an in-panel diagnostics drawer with timestamp-unit warnings.
 - Add a responsive metadata-detail layout with configurable sections, subsection headings, localized labels, literal units, highlights, and missing-value fallbacks.
+- Add a top-level presentation-mode selector, focused mode-specific editor settings, and guidance when switching modes requires additional configuration.
