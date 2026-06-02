@@ -9,6 +9,9 @@ export type StatusPlacement = 'header' | 'below-title' | 'footer';
 export type AccentStyle = 'none' | 'top' | 'left';
 export type BuiltInIcon = 'device' | 'server' | 'cloud' | 'wifi' | 'battery' | 'database';
 export type StatusOperator = 'equals' | 'contains' | 'lt' | 'lte' | 'gt' | 'gte';
+export type StatusMode = 'mapped' | 'composite' | 'staleness';
+export type FleetSort = 'title' | 'status' | 'lastSeen' | 'metric';
+export type SortDirection = 'asc' | 'desc';
 
 export interface MetricMapping {
   field: string;
@@ -34,10 +37,15 @@ export interface StatusRule {
   icon?: BuiltInIcon;
 }
 
+export interface CompositeRule extends StatusRule {
+  field: string;
+}
+
 export interface CardAction {
   label: string;
   url: string;
   newTab?: boolean;
+  includeTimeRange?: boolean;
 }
 
 export interface DeviceCardOptions {
@@ -51,6 +59,8 @@ export interface DeviceCardOptions {
   metrics: MetricMapping[];
   customFields: CustomField[];
   statusRules: StatusRule[];
+  compositeRules: CompositeRule[];
+  statusMode: StatusMode;
   fallbackStatusColor: string;
   fallbackStatusIcon: BuiltInIcon;
   showStaleness: boolean;
@@ -69,6 +79,13 @@ export interface DeviceCardOptions {
   maxColumns: number;
   minCardWidth: number;
   actions: CardAction[];
+  showFleetToolbar: boolean;
+  showFleetSummary: boolean;
+  groupByField: string;
+  sortBy: FleetSort;
+  sortDirection: SortDirection;
+  sortMetricField: string;
+  pageSize: number;
   cardTheme: CardTheme;
   accentStyle: AccentStyle;
   background: 'default' | 'subtle' | 'none';

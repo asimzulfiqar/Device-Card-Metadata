@@ -21,7 +21,12 @@
           { "operator": "equals", "value": "OK", "label": "Healthy", "color": "green" },
           { "operator": "equals", "value": "WARN", "label": "Warning", "color": "yellow" }
         ],
-        "actions": [{ "label": "Details", "url": "d/device-detail?var-device_id={device_id}" }],
+        "statusMode": "composite",
+        "compositeRules": [
+          { "field": "battery", "operator": "lt", "value": "40", "label": "Low battery", "color": "yellow" },
+          { "field": "temperature", "operator": "gte", "value": "60", "label": "High temperature", "color": "red" }
+        ],
+        "actions": [{ "label": "Details", "url": "d/device-detail?var-device_id={device_id}", "includeTimeRange": true }],
         "mode": "grid",
         "layout": "detailed",
         "orientation": "vertical",
@@ -31,6 +36,12 @@
         "statusPlacement": "header",
         "maxColumns": 3,
         "minCardWidth": 220,
+        "showFleetToolbar": true,
+        "showFleetSummary": true,
+        "groupByField": "owner",
+        "sortBy": "status",
+        "sortDirection": "desc",
+        "pageSize": 24,
         "showLogo": true,
         "staticIcon": "device",
         "showStaleness": true,

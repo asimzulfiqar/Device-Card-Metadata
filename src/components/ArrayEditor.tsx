@@ -1,11 +1,11 @@
 import React from 'react';
 import { StandardEditorProps } from '@grafana/data';
 import { Button, Combobox, Field, Input, Switch } from '@grafana/ui';
-import { CardAction, CustomField, MetricMapping, StatusOperator, StatusRule } from '../types';
+import { CardAction, CompositeRule, CustomField, DeviceCardOptions, MetricMapping, StatusOperator, StatusRule } from '../types';
 
-type EditorKind = 'metrics' | 'customFields' | 'statusRules' | 'actions';
-type EditorItem = MetricMapping | CustomField | StatusRule | CardAction;
-type Props = StandardEditorProps<EditorItem[], { kind: EditorKind }>;
+type EditorKind = 'metrics' | 'customFields' | 'statusRules' | 'compositeRules' | 'actions';
+type EditorItem = MetricMapping | CustomField | StatusRule | CompositeRule | CardAction;
+type Props = StandardEditorProps<EditorItem[], { kind: EditorKind }, DeviceCardOptions>;
 
 const operators = [
   { label: 'Equals', value: 'equals' },
@@ -24,13 +24,18 @@ const newItem = (kind: EditorKind): EditorItem => {
       return { name: '', label: '', expression: '' };
     case 'statusRules':
       return { operator: 'equals', value: '', color: 'green' };
+    case 'compositeRules':
+      return { field: '', operator: 'gte', value: '', label: '', color: 'yellow' };
     case 'actions':
       return { label: '', url: '', newTab: true };
   }
 };
 
-export const ArrayEditor = ({ value = [], onChange, item }: Props) => {
+export const ArrayEditor = ({ value = [], onChange, item, context }: Props) => {
   const kind = item.settings?.kind ?? 'metrics';
+  const fields = context.data.flatMap((frame) => frame.fields.map((field) => field.name));
+  const derived = context.options?.customFields?.map((field) => field.name) ?? [];
+  const dataFieldOptions = Array.from(new Set([...fields, ...derived])).map((field) => ({ label: field, value: field }));
   const update = (index: number, patch: Partial<EditorItem>) => {
     onChange(value.map((entry, entryIndex) => (entryIndex === index ? { ...entry, ...patch } : entry)));
   };
@@ -41,7 +46,7 @@ export const ArrayEditor = ({ value = [], onChange, item }: Props) => {
         <div key={index} style={{ borderBottom: '1px solid rgba(204, 204, 220, 0.2)', marginBottom: 8, paddingBottom: 8 }}>
           {kind === 'metrics' && (
             <>
-              <Field label="Source field"><Input value={(entry as MetricMapping).field} onChange={(event) => update(index, { field: event.currentTarget.value })} /></Field>
+              <Field label="Source field"><Combobox isClearable options={dataFieldOptions} value={(entry as MetricMapping).field} onChange={(option) => update(index, { field: option?.value ?? '' })} /></Field>
               <Field label="Label"><Input value={(entry as MetricMapping).label ?? ''} onChange={(event) => update(index, { label: event.currentTarget.value })} /></Field>
               <Field label="Unit override"><Input value={(entry as MetricMapping).unit ?? ''} placeholder="inherit" onChange={(event) => update(index, { unit: event.currentTarget.value })} /></Field>
               <Field label="Decimals"><Input type="number" value={(entry as MetricMapping).decimals ?? ''} onChange={(event) => update(index, { decimals: event.currentTarget.value === '' ? undefined : Number(event.currentTarget.value) })} /></Field>
@@ -62,11 +67,21 @@ export const ArrayEditor = ({ value = [], onChange, item }: Props) => {
               <Field label="Color"><Input value={(entry as StatusRule).color} placeholder="green, red, #5794f2..." onChange={(event) => update(index, { color: event.currentTarget.value })} /></Field>
             </>
           )}
+          {kind === 'compositeRules' && (
+            <>
+              <Field label="Metric field"><Combobox isClearable options={dataFieldOptions} value={(entry as CompositeRule).field} onChange={(option) => update(index, { field: option?.value ?? '' })} /></Field>
+              <Field label="Operator"><Combobox options={operators} value={(entry as CompositeRule).operator} onChange={(option) => update(index, { operator: option.value as StatusOperator })} /></Field>
+              <Field label="Compare value"><Input value={(entry as CompositeRule).value} onChange={(event) => update(index, { value: event.currentTarget.value })} /></Field>
+              <Field label="Failure reason"><Input value={(entry as CompositeRule).label ?? ''} placeholder="High temperature" onChange={(event) => update(index, { label: event.currentTarget.value })} /></Field>
+              <Field label="Severity color"><Input value={(entry as CompositeRule).color} placeholder="yellow, red..." onChange={(event) => update(index, { color: event.currentTarget.value })} /></Field>
+            </>
+          )}
           {kind === 'actions' && (
             <>
               <Field label="Label"><Input value={(entry as CardAction).label} onChange={(event) => update(index, { label: event.currentTarget.value })} /></Field>
               <Field label="URL"><Input value={(entry as CardAction).url} placeholder="d/device?var-id={id}" onChange={(event) => update(index, { url: event.currentTarget.value })} /></Field>
               <Field label="Open in new tab"><Switch value={(entry as CardAction).newTab ?? false} onChange={(event) => update(index, { newTab: event.currentTarget.checked })} /></Field>
+              <Field label="Include time range"><Switch value={(entry as CardAction).includeTimeRange ?? false} onChange={(event) => update(index, { includeTimeRange: event.currentTarget.checked })} /></Field>
             </>
           )}
           <Button variant="secondary" size="sm" icon="trash-alt" onClick={() => onChange(value.filter((_, entryIndex) => entryIndex !== index))}>

@@ -13,6 +13,9 @@ Device Card Panel renders query rows as clean, reusable entity cards for devices
 - Theme-aware neutral, elevated, tinted, and minimal presets for Grafana light and dark modes.
 - Compact, comfortable, and spacious density options with grid, list, or tile metrics.
 - Configurable logo placement, status placement, and status-colored accent bars.
+- Viewer-friendly fleet search, health filters, sorting, grouping, and pagination.
+- Composite health checks that surface the worst failing metric and reason.
+- Field selectors populated from live query columns and configured derived fields.
 
 ## Quick Start
 
@@ -51,6 +54,23 @@ Card action URLs substitute encoded values from the row:
 d/device-detail?var-device_id={device_id}
 https://cmms.example.com/device/{id}
 ```
+
+Action labels and URLs support Grafana dashboard variables. Enable **Include time range** on an action to preserve the source dashboard window during drilldown.
+
+## Fleet Controls
+
+Enable the viewer toolbar for larger result sets. Viewers can search across card values, filter by health color, and sort cards without dashboard edit access. Dashboard authors can group cards by fields such as `owner`, `site`, `team`, or `region`, and limit the number of cards rendered per page.
+
+## Composite Health
+
+Use **Worst composite check** when a card status should be derived from multiple metrics. For example:
+
+```text
+battery < 40       -> Low battery  (yellow)
+temperature >= 60 -> High temperature (red)
+```
+
+If more than one check fails, the card uses the most severe matched color and exposes the failure reason as a status tooltip.
 
 ## Layout And Styling
 

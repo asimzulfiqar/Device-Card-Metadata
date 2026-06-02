@@ -1,4 +1,4 @@
-import { evaluateExpression, relativeTime, statusFor, substituteUrl, withCustomFields } from './utils';
+import { compositeStatus, evaluateExpression, formatMetric, relativeTime, statusFor, substituteUrl, withCustomFields } from './utils';
 
 describe('device card utilities', () => {
   it('evaluates safe derived expressions', () => {
@@ -21,5 +21,16 @@ describe('device card utilities', () => {
 
   it('formats relative times', () => {
     expect(relativeTime(Date.UTC(2026, 0, 1, 10), Date.UTC(2026, 0, 1, 12))).toBe('2h ago');
+  });
+
+  it('selects the worst composite health check', () => {
+    expect(compositeStatus({ battery: 20, temperature: 80 }, [
+      { field: 'battery', operator: 'lt', value: '40', label: 'Low battery', color: 'yellow' },
+      { field: 'temperature', operator: 'gte', value: '60', label: 'High temperature', color: 'red' },
+    ])?.reason).toBe('High temperature');
+  });
+
+  it('uses the Grafana field display processor when no metric override is set', () => {
+    expect(formatMetric(12, { field: 'temperature' }, { config: {}, display: () => ({ text: '12', suffix: '°C' }) } as never)).toBe('12 °C');
   });
 });

@@ -1,5 +1,5 @@
 import { DataFrame, Field, FieldType, getValueFormat, GrafanaTheme2 } from '@grafana/data';
-import { BuiltInIcon, CustomField, MetricMapping, StatusRule } from './types';
+import { BuiltInIcon, CompositeRule, CustomField, MetricMapping, StatusRule } from './types';
 
 export type CardValues = Record<string, unknown>;
 
@@ -80,6 +80,18 @@ export function statusFor(value: unknown, rules: StatusRule[]) {
   });
 }
 
+export function severityForColor(color: string): number {
+  return { gray: 0, green: 1, blue: 1, yellow: 2, orange: 2, red: 3 }[color.toLowerCase()] ?? 1;
+}
+
+export function compositeStatus(values: CardValues, rules: CompositeRule[]) {
+  const matched = rules
+    .filter((rule) => statusFor(values[rule.field], [rule]))
+    .sort((left, right) => severityForColor(right.color) - severityForColor(left.color));
+  const worst = matched[0];
+  return worst ? { ...worst, reason: worst.label || `${worst.field} ${worst.operator} ${worst.value}` } : undefined;
+}
+
 export function formatMetric(value: unknown, mapping: MetricMapping, field?: Field): string {
   if (value === null || value === undefined || value === '') {
     return '-';
@@ -89,6 +101,10 @@ export function formatMetric(value: unknown, mapping: MetricMapping, field?: Fie
   }
   const decimals = mapping.decimals ?? field?.config.decimals;
   const unit = mapping.unit || field?.config.unit;
+  if (!mapping.unit && mapping.decimals === undefined && field?.display) {
+    const display = field.display(value);
+    return `${display.text}${display.suffix ? ` ${display.suffix}` : ''}`;
+  }
   return unit ? getValueFormat(unit)(value, decimals).text : value.toFixed(decimals ?? 2).replace(/\.?0+$/, '');
 }
 

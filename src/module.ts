@@ -1,6 +1,7 @@
 import { PanelPlugin } from '@grafana/data';
 import { DeviceCardPanel } from './components/DeviceCardPanel';
 import { ArrayEditor } from './components/ArrayEditor';
+import { FieldSelectorEditor } from './components/FieldSelectorEditor';
 import { DeviceCardOptions } from './types';
 
 const iconOptions = [
@@ -14,16 +15,18 @@ const iconOptions = [
 
 export const plugin = new PanelPlugin<DeviceCardOptions>(DeviceCardPanel).setPanelOptions((builder) =>
   builder
-    .addTextInput({ path: 'idField', name: 'Entity ID field', category: ['Field mapping'], description: 'Required. Primary identifier used as the card title fallback and in links.' })
-    .addTextInput({ path: 'titleField', name: 'Title field', category: ['Field mapping'] })
-    .addTextInput({ path: 'subtitleField', name: 'Subtitle field', category: ['Field mapping'] })
-    .addTextInput({ path: 'descriptionField', name: 'Description field', category: ['Field mapping'] })
-    .addTextInput({ path: 'statusField', name: 'Status field', category: ['Field mapping'] })
-    .addTextInput({ path: 'lastSeenField', name: 'Last seen field', category: ['Field mapping'], description: 'Map a time field to show relative time and staleness.' })
-    .addTextInput({ path: 'logoField', name: 'Dynamic logo/icon field', category: ['Field mapping'], description: 'Optional URL or built-in icon code.' })
+    .addCustomEditor({ id: 'idField', path: 'idField', name: 'Entity ID field', category: ['Field mapping'], description: 'Required. Primary identifier used as the card title fallback and in links.', editor: FieldSelectorEditor })
+    .addCustomEditor({ id: 'titleField', path: 'titleField', name: 'Title field', category: ['Field mapping'], editor: FieldSelectorEditor })
+    .addCustomEditor({ id: 'subtitleField', path: 'subtitleField', name: 'Subtitle field', category: ['Field mapping'], editor: FieldSelectorEditor })
+    .addCustomEditor({ id: 'descriptionField', path: 'descriptionField', name: 'Description field', category: ['Field mapping'], editor: FieldSelectorEditor })
+    .addCustomEditor({ id: 'statusField', path: 'statusField', name: 'Status field', category: ['Field mapping'], editor: FieldSelectorEditor })
+    .addCustomEditor({ id: 'lastSeenField', path: 'lastSeenField', name: 'Last seen field', category: ['Field mapping'], description: 'Map a time field to show relative time and staleness.', editor: FieldSelectorEditor })
+    .addCustomEditor({ id: 'logoField', path: 'logoField', name: 'Dynamic logo/icon field', category: ['Field mapping'], description: 'Optional URL or built-in icon code.', editor: FieldSelectorEditor })
     .addCustomEditor({ id: 'metrics', path: 'metrics', name: 'Metrics', category: ['Metrics'], editor: ArrayEditor, defaultValue: [], settings: { kind: 'metrics' } })
     .addCustomEditor({ id: 'customFields', path: 'customFields', name: 'Derived fields', category: ['Derived fields'], editor: ArrayEditor, defaultValue: [], settings: { kind: 'customFields' } })
     .addCustomEditor({ id: 'statusRules', path: 'statusRules', name: 'Status rules', category: ['Status'], editor: ArrayEditor, defaultValue: [], settings: { kind: 'statusRules' } })
+    .addSelect({ path: 'statusMode', name: 'Status source', category: ['Status'], defaultValue: 'mapped', settings: { options: [{ label: 'Mapped status field', value: 'mapped' }, { label: 'Worst composite check', value: 'composite' }, { label: 'Last-seen staleness', value: 'staleness' }] } })
+    .addCustomEditor({ id: 'compositeRules', path: 'compositeRules', name: 'Composite health checks', category: ['Status'], editor: ArrayEditor, defaultValue: [], settings: { kind: 'compositeRules' } })
     .addTextInput({ path: 'fallbackStatusColor', name: 'Fallback color', category: ['Status'], defaultValue: 'gray' })
     .addSelect({ path: 'fallbackStatusIcon', name: 'Fallback icon', category: ['Status'], defaultValue: 'device', settings: { options: iconOptions } })
     .addBooleanSwitch({ path: 'showStaleness', name: 'Show staleness dot', category: ['Staleness'], defaultValue: true })
@@ -39,6 +42,13 @@ export const plugin = new PanelPlugin<DeviceCardOptions>(DeviceCardPanel).setPan
     .addSelect({ path: 'metricStyle', name: 'Metric presentation', category: ['Layout'], defaultValue: 'grid', settings: { options: [{ label: 'Grid', value: 'grid' }, { label: 'List', value: 'list' }, { label: 'Tiles', value: 'tiles' }] } })
     .addNumberInput({ path: 'maxColumns', name: 'Maximum columns', category: ['Layout'], defaultValue: 4 })
     .addNumberInput({ path: 'minCardWidth', name: 'Minimum card width', category: ['Layout'], defaultValue: 220 })
+    .addBooleanSwitch({ path: 'showFleetToolbar', name: 'Show search and filters', category: ['Fleet controls'], defaultValue: true })
+    .addBooleanSwitch({ path: 'showFleetSummary', name: 'Show health summary', category: ['Fleet controls'], defaultValue: true })
+    .addCustomEditor({ id: 'groupByField', path: 'groupByField', name: 'Group cards by field', category: ['Fleet controls'], description: 'Optional. Creates collapsible fleet sections.', editor: FieldSelectorEditor })
+    .addSelect({ path: 'sortBy', name: 'Default sort', category: ['Fleet controls'], defaultValue: 'status', settings: { options: [{ label: 'Status severity', value: 'status' }, { label: 'Title', value: 'title' }, { label: 'Last seen', value: 'lastSeen' }, { label: 'Metric value', value: 'metric' }] } })
+    .addRadio({ path: 'sortDirection', name: 'Sort direction', category: ['Fleet controls'], defaultValue: 'desc', settings: { options: [{ label: 'Ascending', value: 'asc' }, { label: 'Descending', value: 'desc' }] } })
+    .addCustomEditor({ id: 'sortMetricField', path: 'sortMetricField', name: 'Sort metric field', category: ['Fleet controls'], showIf: (config) => config.sortBy === 'metric', editor: FieldSelectorEditor })
+    .addNumberInput({ path: 'pageSize', name: 'Cards per page', category: ['Fleet controls'], defaultValue: 24, settings: { min: 1, max: 500 } })
     .addSelect({ path: 'logoPlacement', name: 'Logo placement', category: ['Logo'], defaultValue: 'header-left', settings: { options: [{ label: 'Header left', value: 'header-left' }, { label: 'Header right', value: 'header-right' }] } })
     .addSelect({ path: 'statusPlacement', name: 'Status placement', category: ['Status'], defaultValue: 'header', settings: { options: [{ label: 'Header', value: 'header' }, { label: 'Below title', value: 'below-title' }, { label: 'Footer', value: 'footer' }] } })
     .addCustomEditor({ id: 'actions', path: 'actions', name: 'Card actions', category: ['Actions'], editor: ArrayEditor, defaultValue: [], settings: { kind: 'actions' } })
