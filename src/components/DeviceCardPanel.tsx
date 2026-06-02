@@ -18,6 +18,9 @@ import {
   CardValues,
   compositeStatus,
   severityForColor,
+  profileOptions,
+  suggestMappings,
+  timestampWarning,
 } from '../utils';
 
 const getStyles = (theme: ReturnType<typeof useTheme2>) => ({
@@ -64,6 +67,22 @@ const getStyles = (theme: ReturnType<typeof useTheme2>) => ({
     gap: ${theme.spacing(1)};
     justify-content: center;
     padding: ${theme.spacing(1.5, 0)};
+  `,
+  assistant: css`
+    margin-bottom: ${theme.spacing(1.5)};
+  `,
+  diagnostics: css`
+    background: ${theme.colors.background.secondary};
+    border: 1px solid ${theme.colors.border.weak};
+    border-radius: ${theme.shape.radius.default};
+    margin-bottom: ${theme.spacing(1.5)};
+    padding: ${theme.spacing(1.5)};
+  `,
+  diagnosticsGrid: css`
+    display: grid;
+    gap: ${theme.spacing(1)};
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    margin-top: ${theme.spacing(1)};
   `,
   card: css`
     display: flex;
@@ -183,7 +202,7 @@ const getStyles = (theme: ReturnType<typeof useTheme2>) => ({
 const option = <T,>(value: T | undefined, fallback: T): T => value ?? fallback;
 const text = (value: unknown) => (value === null || value === undefined ? '' : String(value));
 
-export const DeviceCardPanel = ({ options, data, replaceVariables, timeRange }: PanelProps<DeviceCardOptions>) => {
+export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariables, timeRange }: PanelProps<DeviceCardOptions>) => {
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
   const [search, setSearch] = useState('');
@@ -191,6 +210,7 @@ export const DeviceCardPanel = ({ options, data, replaceVariables, timeRange }: 
   const [viewerSort, setViewerSort] = useState(options.sortBy || 'status');
   const [page, setPage] = useState(0);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState(options.showDiagnostics ?? false);
   const frame = data.series[0];
   const rows = frameRows(frame);
   const idField = options.idField;
@@ -247,17 +267,38 @@ export const DeviceCardPanel = ({ options, data, replaceVariables, timeRange }: 
     counts[key] = (counts[key] ?? 0) + 1;
     return counts;
   }, {});
+  const suggested = suggestMappings(frame);
+  const applySetup = () => onOptionsChange({
+    ...options,
+    ...profileOptions(option(options.setupProfile, 'iot')),
+    ...Object.fromEntries(Object.entries(suggested).filter(([key]) => !options[key as keyof DeviceCardOptions])),
+  });
+  const mappedFields = [options.idField, options.titleField, options.subtitleField, options.descriptionField, options.statusField, options.lastSeenField, options.logoField].filter(Boolean);
+  const timestampIssue = options.lastSeenField ? timestampWarning(rows[0]?.[options.lastSeenField]) : undefined;
 
   if (!frame || rows.length === 0) {
     return <div className={styles.empty}><div><h3>Device Card Panel</h3><p>Return a table with one row per entity, then map an Entity ID field in panel options.</p><code>SELECT device_id, owner, status, battery, last_seen FROM devices</code></div></div>;
   }
   if (!idField || !fieldByName(frame, idField)) {
-    return <div className={styles.empty}><Alert title="Map an Entity ID field" severity="info">Open Field mapping in the panel options and enter a column name such as <code>device_id</code>. Your query returned {rows.length} row(s).</Alert></div>;
+    return <div className={styles.empty}><div><Alert title="Map an Entity ID field" severity="info">Your query returned {rows.length} row(s). Use the setup assistant or open Field mapping in the panel options.</Alert><Button icon="cog" onClick={applySetup}>Apply suggested mappings</Button></div></div>;
   }
 
   return (
     <div className={styles.wrapper}>
       {lastSeenWarning && <Alert title="Last seen field is not a time field" severity="warning">Choose a Grafana time field for relative age and staleness.</Alert>}
+      {timestampIssue && <Alert title="Check last-seen timestamp units" severity="warning">{timestampIssue}</Alert>}
+      <div className={styles.assistant}>
+        <Button size="sm" variant="secondary" icon="info-circle" onClick={() => setDiagnosticsOpen((open) => !open)}>{diagnosticsOpen ? 'Hide diagnostics' : 'Show diagnostics'}</Button>
+      </div>
+      {diagnosticsOpen && <section className={styles.diagnostics}>
+        <strong>Data diagnostics</strong>
+        <div>{data.series.length} frame(s), {rows.length} row(s) in the first frame, {mappedFields.length} mapped role(s).</div>
+        <div className={styles.diagnosticsGrid}>
+          {data.series.map((series, index) => <div key={`${series.name || 'frame'}-${index}`}><strong>{series.name || `Frame ${index + 1}`}</strong><div>{series.length} rows</div>{series.fields.map((field) => <div key={field.name}><code>{field.name}</code> <span className={styles.muted}>{field.type}</span></div>)}</div>)}
+        </div>
+        {!options.lastSeenField && <div className={styles.muted}>Tip: map a last-seen field to enable staleness detection.</div>}
+        {data.series.length > 1 && <div className={styles.muted}>Only the first frame is rendered. Join query results with Grafana transformations when needed.</div>}
+      </section>}
       {option(options.showFleetSummary, true) && option(options.mode, 'grid') === 'grid' && <div className={styles.summary}>
         <Button size="sm" variant={statusFilter === 'all' ? 'primary' : 'secondary'} onClick={() => { setStatusFilter('all'); setPage(0); }}>All {cards.length}</Button>
         {Object.entries(summary).map(([color, count]) => <Button key={color} size="sm" variant={statusFilter === color ? 'primary' : 'secondary'} onClick={() => { setStatusFilter(color); setPage(0); }}>{color} {count}</Button>)}

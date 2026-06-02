@@ -13,8 +13,11 @@ const iconOptions = [
   { label: 'Database', value: 'database' },
 ];
 
-export const plugin = new PanelPlugin<DeviceCardOptions>(DeviceCardPanel).setPanelOptions((builder) =>
-  builder
+export const plugin = new PanelPlugin<DeviceCardOptions>(DeviceCardPanel)
+  .setPanelOptions((builder) =>
+    builder
+    .addSelect({ path: 'setupProfile', name: 'Setup profile', category: ['Setup assistant'], defaultValue: 'iot', description: 'Used by the suggested-mapping button when a required ID field is missing.', settings: { options: [{ label: 'IoT device', value: 'iot' }, { label: 'Service health', value: 'service' }, { label: 'Asset inventory', value: 'asset' }] } })
+    .addBooleanSwitch({ path: 'showDiagnostics', name: 'Open diagnostics by default', category: ['Setup assistant'], defaultValue: false })
     .addCustomEditor({ id: 'idField', path: 'idField', name: 'Entity ID field', category: ['Field mapping'], description: 'Required. Primary identifier used as the card title fallback and in links.', editor: FieldSelectorEditor })
     .addCustomEditor({ id: 'titleField', path: 'titleField', name: 'Title field', category: ['Field mapping'], editor: FieldSelectorEditor })
     .addCustomEditor({ id: 'subtitleField', path: 'subtitleField', name: 'Subtitle field', category: ['Field mapping'], editor: FieldSelectorEditor })

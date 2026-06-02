@@ -1,4 +1,5 @@
-import { compositeStatus, evaluateExpression, formatMetric, relativeTime, statusFor, substituteUrl, withCustomFields } from './utils';
+import { FieldType } from '@grafana/data';
+import { compositeStatus, evaluateExpression, formatMetric, relativeTime, statusFor, substituteUrl, suggestMappings, timestampWarning, withCustomFields } from './utils';
 
 describe('device card utilities', () => {
   it('evaluates safe derived expressions', () => {
@@ -32,5 +33,21 @@ describe('device card utilities', () => {
 
   it('uses the Grafana field display processor when no metric override is set', () => {
     expect(formatMetric(12, { field: 'temperature' }, { config: {}, display: () => ({ text: '12', suffix: '°C' }) } as never)).toBe('12 °C');
+  });
+
+  it('suggests common mappings and numeric metrics conservatively', () => {
+    const mappings = suggestMappings({ fields: [
+      { name: 'device_id', type: FieldType.string },
+      { name: 'status', type: FieldType.string },
+      { name: 'battery', type: FieldType.number },
+    ] } as never);
+    expect(mappings.idField).toBe('device_id');
+    expect(mappings.statusField).toBe('status');
+    expect(mappings.metrics).toEqual([{ field: 'battery', label: 'battery' }]);
+  });
+
+  it('detects second-based timestamps', () => {
+    expect(timestampWarning(1760000000)).toContain('seconds');
+    expect(timestampWarning(1760000000000)).toBeUndefined();
   });
 });

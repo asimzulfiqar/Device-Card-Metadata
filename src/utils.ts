@@ -1,5 +1,5 @@
 import { DataFrame, Field, FieldType, getValueFormat, GrafanaTheme2 } from '@grafana/data';
-import { BuiltInIcon, CompositeRule, CustomField, MetricMapping, StatusRule } from './types';
+import { BuiltInIcon, CompositeRule, CustomField, DeviceCardOptions, MetricMapping, SetupProfile, StatusRule } from './types';
 
 export type CardValues = Record<string, unknown>;
 
@@ -27,6 +27,60 @@ export function fieldByName(frame: DataFrame | undefined, name: string): Field |
 
 export function isTimeField(frame: DataFrame | undefined, name: string): boolean {
   return !name || fieldByName(frame, name)?.type === FieldType.time;
+}
+
+const mappingCandidates = {
+  idField: ['device_id', 'entity_id', 'asset_id', 'service', 'host', 'hostname', 'id', 'name'],
+  titleField: ['display_name', 'device_name', 'service_name', 'asset_name', 'hostname', 'name'],
+  subtitleField: ['owner', 'team', 'type', 'category'],
+  descriptionField: ['description', 'location', 'region', 'site'],
+  statusField: ['status', 'health', 'state', 'severity'],
+  lastSeenField: ['last_seen', 'last_updated', 'updated_at', 'timestamp', 'time'],
+  logoField: ['logo', 'icon', 'image', 'image_url'],
+} satisfies Partial<Record<keyof DeviceCardOptions, string[]>>;
+
+export function suggestMappings(frame?: DataFrame): Partial<DeviceCardOptions> {
+  if (!frame) {
+    return {};
+  }
+  const names = new Map(frame.fields.map((field) => [field.name.toLowerCase(), field.name]));
+  const suggested: Partial<DeviceCardOptions> = {};
+  Object.entries(mappingCandidates).forEach(([role, candidates]) => {
+    const field = candidates.map((candidate) => names.get(candidate)).find(Boolean);
+    if (field) {
+      (suggested as Record<string, unknown>)[role] = field;
+    }
+  });
+  const mapped = new Set(Object.values(suggested));
+  suggested.metrics = frame.fields
+    .filter((field) => field.type === FieldType.number && !mapped.has(field.name))
+    .slice(0, 4)
+    .map((field) => ({ field: field.name, label: field.name.replace(/_/g, ' ') }));
+  return suggested;
+}
+
+export function profileOptions(profile: SetupProfile): Partial<DeviceCardOptions> {
+  const base: Partial<DeviceCardOptions> = { setupProfile: profile, mode: 'grid', showFleetToolbar: true, showFleetSummary: true };
+  if (profile === 'service') {
+    return { ...base, staticIcon: 'server', layout: 'compact', metricStyle: 'list', cardTheme: 'minimal', accentStyle: 'left', groupByField: 'team' };
+  }
+  if (profile === 'asset') {
+    return { ...base, staticIcon: 'database', layout: 'detailed', metricStyle: 'grid', cardTheme: 'neutral', accentStyle: 'none', groupByField: 'location' };
+  }
+  return { ...base, staticIcon: 'device', layout: 'detailed', metricStyle: 'tiles', cardTheme: 'elevated', accentStyle: 'top', groupByField: 'owner' };
+}
+
+export function timestampWarning(value: unknown): string | undefined {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return undefined;
+  }
+  if (value > 0 && value < 100_000_000_000) {
+    return 'Timestamp appears to use seconds. Grafana time fields should use milliseconds.';
+  }
+  if (value > 100_000_000_000_000) {
+    return 'Timestamp is unusually large. Check whether it uses microseconds or nanoseconds.';
+  }
+  return undefined;
 }
 
 export function relativeTime(value: unknown, now = Date.now()): string {

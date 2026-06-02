@@ -12,6 +12,7 @@ export type StatusOperator = 'equals' | 'contains' | 'lt' | 'lte' | 'gt' | 'gte'
 export type StatusMode = 'mapped' | 'composite' | 'staleness';
 export type FleetSort = 'title' | 'status' | 'lastSeen' | 'metric';
 export type SortDirection = 'asc' | 'desc';
+export type SetupProfile = 'iot' | 'service' | 'asset';
 
 export interface MetricMapping {
   field: string;
@@ -86,6 +87,8 @@ export interface DeviceCardOptions {
   sortDirection: SortDirection;
   sortMetricField: string;
   pageSize: number;
+  setupProfile: SetupProfile;
+  showDiagnostics: boolean;
   cardTheme: CardTheme;
   accentStyle: AccentStyle;
   background: 'default' | 'subtle' | 'none';

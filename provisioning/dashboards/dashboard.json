@@ -42,6 +42,8 @@
         "sortBy": "status",
         "sortDirection": "desc",
         "pageSize": 24,
+        "setupProfile": "iot",
+        "showDiagnostics": true,
         "showLogo": true,
         "staticIcon": "device",
         "showStaleness": true,

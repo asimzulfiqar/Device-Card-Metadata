@@ -16,6 +16,7 @@ Device Card Panel renders query rows as clean, reusable entity cards for devices
 - Viewer-friendly fleet search, health filters, sorting, grouping, and pagination.
 - Composite health checks that surface the worst failing metric and reason.
 - Field selectors populated from live query columns and configured derived fields.
+- Setup profiles, conservative auto-mapping suggestions, and an in-panel data diagnostics drawer.
 
 ## Quick Start
 
@@ -71,6 +72,12 @@ temperature >= 60 -> High temperature (red)
 ```
 
 If more than one check fails, the card uses the most severe matched color and exposes the failure reason as a status tooltip.
+
+## Setup Assistant And Diagnostics
+
+When a query returns rows but the required entity ID has not been mapped, the panel offers an **Apply suggested mappings** button. Suggestions only fill empty settings and look for common column names such as `device_id`, `asset_id`, `service`, `host`, `status`, and `last_seen`.
+
+Choose an IoT device, service-health, or asset-inventory setup profile before applying suggestions. The diagnostics drawer remains available after setup and shows frames, row counts, field names, field types, multi-frame guidance, and suspicious timestamp units.
 
 ## Layout And Styling
 
