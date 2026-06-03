@@ -2,6 +2,8 @@
 
 ## Before Submission
 
+Use [RUN_TEST_USE.md](RUN_TEST_USE.md) for the full local run, test, packaging, validator, and manual browser checklist.
+
 1. Replace the repository links in `src/plugin.json` if the final GitHub URL differs.
 2. Capture branded screenshots for the fleet overview, metadata detail, focused options editor, and dark-theme example. The expected paths are already listed in `src/plugin.json` under `src/img/screenshots/`.
 3. Run:

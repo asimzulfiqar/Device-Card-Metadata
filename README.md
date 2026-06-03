@@ -123,6 +123,8 @@ For catalog submission, package and validate the built plugin using Grafana's of
 
 See [docs/PUBLISHING.md](docs/PUBLISHING.md) for the release checklist.
 
+See [docs/RUN_TEST_USE.md](docs/RUN_TEST_USE.md) for detailed local run, test, validation, and usage instructions.
+
 ## Compatibility
 
 - Grafana `10.0.0` and later.
