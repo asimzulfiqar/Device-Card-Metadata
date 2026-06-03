@@ -10,8 +10,12 @@ import {
   frameRows,
   iconNames,
   isTimeField,
+  metricColor,
+  parseTrendValues,
   relativeTime,
   resolveColor,
+  safeActionUrl,
+  selectMetadataRow,
   staleness,
   statusFor,
   substituteUrl,
@@ -246,6 +250,12 @@ const getStyles = (theme: ReturnType<typeof useTheme2>) => ({
     text-decoration: none;
     &:hover { text-decoration: underline; }
   `,
+  trend: css`
+    display: block;
+    height: 22px;
+    margin-top: ${theme.spacing(0.5)};
+    width: 100%;
+  `,
 });
 
 const option = <T,>(value: T | undefined, fallback: T): T => value ?? fallback;
@@ -260,6 +270,7 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
   const [page, setPage] = useState(0);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(options.showDiagnostics ?? false);
+  const [failedLogos, setFailedLogos] = useState<Record<string, boolean>>({});
   const frame = data.series[0];
   const rows = frameRows(frame);
   const idField = options.idField;
@@ -293,6 +304,7 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
     return { values, derived, stale, status, severity: severityForColor(status.color), group: text(values[options.groupByField]) || 'Other' };
   }), [idField, options, rows]);
   const filteredCards = useMemo(() => cards
+    .slice(0, Math.max(1, option(options.maxEntities, 500)))
     .filter((card) => statusFilter === 'all' || card.status.color.toLowerCase() === statusFilter)
     .filter((card) => !search || Object.values(card.values).some((value) => text(value).toLowerCase().includes(search.toLowerCase())))
     .sort((left, right) => {
@@ -305,6 +317,7 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
       const comparison = typeof leftValue === 'string' ? leftValue.localeCompare(String(rightValue)) : Number(leftValue) - Number(rightValue);
       return option(options.sortDirection, 'desc') === 'asc' ? comparison : -comparison;
     }), [cards, idField, options, search, statusFilter, viewerSort]);
+  const truncatedCount = Math.max(0, cards.length - Math.max(1, option(options.maxEntities, 500)));
   const expandedCards = filteredCards.filter((card) => !options.groupByField || !collapsedGroups[card.group]);
   const pageSize = Math.max(1, option(options.pageSize, 24));
   const pageCount = Math.max(1, Math.ceil(expandedCards.length / pageSize));
@@ -336,7 +349,8 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
     if (!(options.metadataSections ?? []).length) {
       return <div className={styles.empty}><div><Alert title="Configure metadata sections" severity="info">This panel is using Metadata detail presentation. Open Metadata detail in the panel options, then add sections and rows for the fields you want to display.</Alert></div></div>;
     }
-    const values = withCustomFields(rows[option(options.rowIndex, 0)] ?? rows[0], options.customFields ?? []).values;
+    const selectedRow = selectMetadataRow(rows, options, replaceVariables);
+    const values = withCustomFields(selectedRow ?? rows[0], options.customFields ?? []).values;
     const metadataMinWidth = Math.max(220, Math.floor(1040 / Math.max(1, option(options.metadataColumns, 4))));
     return <div className={styles.wrapper}>
       <div className={styles.metadataSheet} style={{ gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${metadataMinWidth}px), 1fr))` }}>
@@ -353,6 +367,7 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
   return (
     <div className={styles.wrapper}>
       {!(options.metrics ?? []).length && !options.subtitleField && !options.descriptionField && !options.statusField && <Alert title="Add fleet card fields" severity="info">This panel is using Fleet cards presentation. Map a title, status, subtitle, description, or metric field to build the card overview.</Alert>}
+      {truncatedCount > 0 && <Alert title="Fleet result truncated" severity="info">Rendered the first {option(options.maxEntities, 500)} entities and skipped {truncatedCount}. Increase Maximum entities rendered or filter the query for this dashboard.</Alert>}
       {lastSeenWarning && <Alert title="Last seen field is not a time field" severity="warning">Choose a Grafana time field for relative age and staleness.</Alert>}
       {timestampIssue && <Alert title="Check last-seen timestamp units" severity="warning">{timestampIssue}</Alert>}
       <div className={styles.assistant}>
@@ -394,7 +409,8 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
             accentStyle === 'top' ? `inset 0 3px 0 ${statusColor}` : '',
             accentStyle === 'left' ? `inset 3px 0 0 ${statusColor}` : '',
           ].filter(Boolean).join(', ');
-          const logo = option(options.showLogo, true) && <div className={styles.logo}>{logoIsUrl ? <img className={styles.image} src={dynamicLogo} alt="" /> : <Icon name={iconNames[logoIcon] as never} size="xl" />}</div>;
+          const showImageLogo = logoIsUrl && !failedLogos[dynamicLogo];
+          const logo = option(options.showLogo, true) && <div className={styles.logo}>{showImageLogo ? <img className={styles.image} src={dynamicLogo} alt="" onError={() => setFailedLogos((current) => ({ ...current, [dynamicLogo]: true }))} /> : <Icon name={iconNames[logoIcon] as never} size="xl" />}</div>;
           const statusIcon = 'icon' in statusInfo ? statusInfo.icon : undefined;
           const status = <span className={styles.pill} style={{ background: statusColor }} title={'reason' in statusInfo ? statusInfo.reason : undefined}>{statusIcon && <Icon name={iconNames[statusIcon] as never} size="xs" />}{statusInfo.label}</span>;
           const showGroup = Boolean(options.groupByField) && (index === 0 || pagedCards[index - 1].group !== group);
@@ -426,7 +442,23 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
               </div>
               <div className={styles.body}>
                 {layout === 'detailed' && options.descriptionField && <div className={styles.description}>{text(values[options.descriptionField])}</div>}
-                {metrics.length > 0 && <div className={cx(styles.metrics, metricStyle === 'list' && styles.metricList)}>{metrics.map((metric) => <div className={cx(metricStyle === 'list' && styles.metricListItem, metricStyle === 'tiles' && styles.metricTile)} key={metric.field}><div className={styles.muted}>{metric.label || metric.field}</div><div className={styles.metricValue}>{formatMetric(values[metric.field], metric, fieldByName(frame, metric.field))}</div></div>)}</div>}
+                {metrics.length > 0 && <div className={cx(styles.metrics, metricStyle === 'list' && styles.metricList)}>{metrics.map((metric) => {
+                  const color = metricColor(values[metric.field], metric);
+                  const resolvedMetricColor = color ? resolveColor(color, theme) : undefined;
+                  const trendValues = metric.showTrend ? parseTrendValues(values[metric.trendField || `${metric.field}_trend`]) : [];
+                  const min = Math.min(...trendValues);
+                  const max = Math.max(...trendValues);
+                  const points = trendValues.map((point, pointIndex) => {
+                    const x = trendValues.length === 1 ? 50 : (pointIndex / (trendValues.length - 1)) * 100;
+                    const y = max === min ? 50 : 90 - ((point - min) / (max - min)) * 80;
+                    return `${x},${y}`;
+                  }).join(' ');
+                  return <div className={cx(metricStyle === 'list' && styles.metricListItem, metricStyle === 'tiles' && styles.metricTile)} key={metric.field}>
+                    <div className={styles.muted}>{metric.label || metric.field}</div>
+                    <div className={styles.metricValue} style={{ color: resolvedMetricColor }}>{formatMetric(values[metric.field], metric, fieldByName(frame, metric.field))}</div>
+                    {points && <svg className={styles.trend} viewBox="0 0 100 100" preserveAspectRatio="none" aria-label={`${metric.label || metric.field} trend`}><polyline fill="none" stroke={resolvedMetricColor || theme.colors.text.link} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" points={points} /></svg>}
+                  </div>;
+                })}</div>}
                 <div className={styles.footer}>
                   <span className={cx(styles.muted, styles.footerGroup)}>
                     {statusPlacement === 'footer' && status}
@@ -436,8 +468,8 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
                   <span className={styles.footerGroup}>{(options.actions ?? []).map((action) => {
                     const templated = replaceVariables(substituteUrl(action.url, values));
                     const separator = templated.includes('?') ? '&' : '?';
-                    const href = action.includeTimeRange ? `${templated}${separator}from=${encodeURIComponent(String(timeRange.from.valueOf()))}&to=${encodeURIComponent(String(timeRange.to.valueOf()))}` : templated;
-                    return <a className={styles.link} href={href} key={action.label} target={action.newTab ? '_blank' : '_self'} rel={action.newTab ? 'noreferrer' : undefined}>{replaceVariables(action.label)}</a>;
+                    const href = safeActionUrl(action.includeTimeRange ? `${templated}${separator}from=${encodeURIComponent(String(timeRange.from.valueOf()))}&to=${encodeURIComponent(String(timeRange.to.valueOf()))}` : templated);
+                    return href ? <a className={styles.link} href={href} key={action.label} target={action.newTab ? '_blank' : '_self'} rel={action.newTab ? 'noreferrer' : undefined}>{replaceVariables(action.label)}</a> : null;
                   })}</span>
                 </div>
                 {derived.errors.length > 0 && <span className={styles.muted} title={derived.errors.join('\n')}>Derived field warning</span>}

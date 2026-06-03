@@ -20,6 +20,10 @@ export interface MetricMapping {
   label?: string;
   unit?: string;
   decimals?: number;
+  thresholds?: MetricThreshold[];
+  valueMappings?: ValueMapping[];
+  trendField?: string;
+  showTrend?: boolean;
 }
 
 export interface CustomField {
@@ -48,6 +52,18 @@ export interface CardAction {
   url: string;
   newTab?: boolean;
   includeTimeRange?: boolean;
+}
+
+export interface MetricThreshold {
+  operator: StatusOperator;
+  value: string;
+  color: string;
+}
+
+export interface ValueMapping {
+  value: string;
+  text: string;
+  color?: string;
 }
 
 export interface MetadataRow {
@@ -104,6 +120,9 @@ export interface DeviceCardOptions {
   sortDirection: SortDirection;
   sortMetricField: string;
   pageSize: number;
+  maxEntities: number;
+  metadataSelectorField: string;
+  metadataSelectorValue: string;
   metadataSections: MetadataSection[];
   metadataColumns: number;
   setupProfile: SetupProfile;

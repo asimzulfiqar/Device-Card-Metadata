@@ -11,6 +11,7 @@ test('renders provisioned device cards', async ({ gotoPanelEditPage, readProvisi
   const panelEditPage = await gotoPanelEditPage({ dashboard, id: '1' });
   await expect(panelEditPage.panel.locator).toContainText('sensor-001');
   await expect(panelEditPage.panel.locator).toContainText('Battery');
+  await expect(panelEditPage.panel.locator.locator('svg[aria-label="Battery trend"]').first()).toBeVisible();
   await expect(panelEditPage.panel.locator).toContainText('Data diagnostics');
 });
 

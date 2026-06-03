@@ -30,3 +30,34 @@ jobs:
           mv dist asimzulfiqar-devicecard-panel
           zip asimzulfiqar-devicecard-panel-1.0.0.zip asimzulfiqar-devicecard-panel -r
           docker run --pull=always -v "$PWD/asimzulfiqar-devicecard-panel-1.0.0.zip:/archive.zip" grafana/plugin-validator-cli -analyzer=metadatavalid /archive.zip
+
+  grafana-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        grafana-version: ['10.4.0', '11.6.0', '12.4.0']
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Start Grafana ${{ matrix.grafana-version }}
+        run: GRAFANA_VERSION=${{ matrix.grafana-version }} docker compose up --build -d
+      - name: Wait for Grafana
+        run: |
+          for i in {1..60}; do
+            if curl -fsS http://localhost:3000/api/health; then exit 0; fi
+            sleep 2
+          done
+          docker compose logs
+          exit 1
+      - name: Check provisioned dashboard
+        run: curl -fsS http://localhost:3000/api/dashboards/uid/device-card-panel-examples
+      - if: always()
+        run: docker compose down -v

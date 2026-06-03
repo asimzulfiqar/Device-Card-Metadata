@@ -5,14 +5,15 @@
       "title": "Service health",
       "type": "asimzulfiqar-devicecard-panel",
       "options": {
+        "presentationMode": "fleet",
         "idField": "service",
         "titleField": "service",
         "subtitleField": "team",
         "descriptionField": "region",
         "statusField": "health",
         "metrics": [
-          { "field": "latency_ms", "label": "Latency", "unit": "ms", "decimals": 0 },
-          { "field": "error_rate", "label": "Errors", "unit": "percentunit", "decimals": 2 }
+          { "field": "latency_ms", "label": "Latency", "unit": "ms", "decimals": 0, "thresholds": [{ "operator": "gte", "value": "500", "color": "red" }] },
+          { "field": "error_rate", "label": "Errors", "unit": "percentunit", "decimals": 2, "thresholds": [{ "operator": "gte", "value": "0.02", "color": "yellow" }] }
         ],
         "customFields": [
           { "name": "summary", "label": "Summary", "expression": "concat(team, \" - \", region)" }
@@ -30,6 +31,7 @@
         "cardTheme": "minimal",
         "accentStyle": "left",
         "maxColumns": 4,
+        "maxEntities": 500,
         "showLogo": true,
         "staticIcon": "server"
       }

@@ -10,3 +10,4 @@
 - Add setup profiles, conservative field auto-mapping, and an in-panel diagnostics drawer with timestamp-unit warnings.
 - Add a responsive metadata-detail layout with configurable sections, subsection headings, localized labels, literal units, highlights, and missing-value fallbacks.
 - Add a top-level presentation-mode selector, focused mode-specific editor settings, and guidance when switching modes requires additional configuration.
+- Add metadata row selection by field value, metadata templates, section JSON import/export, duplicate/reorder controls, safe action URL handling, logo image fallback, metric value mappings, metric threshold colors, mini trends, large-fleet render limits, catalog screenshots, and a Grafana compatibility CI matrix.

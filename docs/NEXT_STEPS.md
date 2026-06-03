@@ -18,39 +18,44 @@ Paused on 2026-06-02 after agreeing to implement the full professional-release i
   - `npm run build`
   - `npm run e2e` - 4 passed
 
-## Agreed Sprint
+## Agreed Sprint Status
 
-Implement all of the following:
+Implemented in the next sprint:
 
-1. Fix UTF-8 text corruption in documentation, tests, and the provisioned German metadata example.
-2. Add fleet-to-metadata drilldown support through card actions and document the dashboard-variable workflow.
-3. Add metadata row selection by entity field and value, including Grafana variable replacement. Keep row-index fallback.
-4. Validate action URLs and reject unsafe schemes such as `javascript:`.
-5. Show the configured fallback icon when a dynamic logo image fails to load.
-6. Add metric thresholds and value mappings.
-7. Add optional metric sparklines or mini trends with a practical table-data input convention.
-8. Add reusable metadata templates:
+1. Fixed UTF-8 text corruption in documentation, tests, and the provisioned German metadata example.
+2. Added fleet-to-metadata drilldown support through card actions and documented the dashboard-variable workflow.
+3. Added metadata row selection by entity field and value, including Grafana variable replacement, with row-index fallback.
+4. Added action URL validation that rejects unsafe schemes such as `javascript:`.
+5. Added fallback icon rendering when a dynamic logo image fails to load.
+6. Added metric thresholds and value mappings.
+7. Added optional metric sparklines / mini trends with a delimited table-data convention.
+8. Added reusable metadata templates:
    - Generic asset
    - IoT device
    - Service or server
    - Water-monitoring asset
-9. Improve the metadata section editor:
+9. Improved the metadata section editor:
    - Duplicate sections and rows
    - Move sections and rows up or down
    - Collapse sections while editing
    - Confirm destructive removal
    - Import and export section JSON
-10. Add large-fleet guardrails:
+10. Added large-fleet guardrails:
    - Configurable maximum rendered entities
    - Clear truncation notice
    - Consider virtualization only if pagination and limits are insufficient
-11. Add professional catalog screenshots and list them in `src/plugin.json`:
+11. Added catalog screenshots and listed them in `src/plugin.json`:
    - Fleet overview
    - Metadata detail
    - Focused options editor
    - Dark-theme example
-12. Add or document a Grafana compatibility matrix. The local Docker environment currently uses Grafana `12.4.0`, while `src/plugin.json` declares `>=10.0.0`.
-13. Package the release ZIP and run Grafana plugin validator checks.
+12. Added and documented a Grafana compatibility matrix for `10.4.0`, `11.6.0`, and `12.4.0`.
+13. Packaged the release ZIP.
+
+Still requires Docker Desktop to be running:
+
+- Run `npm run e2e` against `http://localhost:3000`.
+- Run the Docker-based Grafana plugin validator.
 
 ## Files Inspected For The Sprint
 
@@ -68,10 +73,7 @@ Implement all of the following:
 
 ## Important Findings
 
-- UTF-8 corruption is visible in tracked content, including values such as:
-  - `WasserzÃ¤hler`
-  - `mÂ³`
-  - `m Ã¼. NHN`
+- UTF-8 corruption was visible in older tracked content and should stay fixed in user-facing files.
 - `src/plugin.json` currently has an empty `screenshots` array.
 - `substituteUrl()` currently substitutes values but does not validate URL schemes.
 - Dynamic logos render an `<img>` but do not fall back when image loading fails.
@@ -87,4 +89,3 @@ Implement all of the following:
 3. Metric thresholds, value mappings, trends, and fleet limits.
 4. Documentation, screenshots, compatibility matrix, packaging, and validator run.
 5. Run the full verification suite and restart Grafana.
-

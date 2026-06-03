@@ -1,5 +1,20 @@
 import { FieldType } from '@grafana/data';
-import { compositeStatus, evaluateExpression, formatMetadataValue, formatMetric, relativeTime, statusFor, substituteUrl, suggestMappings, timestampWarning, withCustomFields } from './utils';
+import {
+  compositeStatus,
+  evaluateExpression,
+  formatMetadataValue,
+  formatMetric,
+  metricColor,
+  parseTrendValues,
+  relativeTime,
+  safeActionUrl,
+  selectMetadataRow,
+  statusFor,
+  substituteUrl,
+  suggestMappings,
+  timestampWarning,
+  withCustomFields,
+} from './utils';
 
 describe('device card utilities', () => {
   it('evaluates safe derived expressions', () => {
@@ -20,6 +35,12 @@ describe('device card utilities', () => {
     expect(substituteUrl('/device/{id}?site={site}', { id: 'pump 1', site: 'Berlin / north' })).toBe('/device/pump%201?site=Berlin%20%2F%20north');
   });
 
+  it('rejects unsafe action URLs', () => {
+    expect(safeActionUrl('javascript:alert(1)')).toBeUndefined();
+    expect(safeActionUrl('/d/device?var-id=1')).toBe('/d/device?var-id=1');
+    expect(safeActionUrl('https://example.com/device/1')).toBe('https://example.com/device/1');
+  });
+
   it('formats relative times', () => {
     expect(relativeTime(Date.UTC(2026, 0, 1, 10), Date.UTC(2026, 0, 1, 12))).toBe('2h ago');
   });
@@ -33,6 +54,22 @@ describe('device card utilities', () => {
 
   it('uses the Grafana field display processor when no metric override is set', () => {
     expect(formatMetric(12, { field: 'temperature' }, { config: {}, display: () => ({ text: '12', suffix: '°C' }) } as never)).toBe('12 °C');
+  });
+
+  it('applies metric value mappings and threshold colors', () => {
+    expect(formatMetric(0, { field: 'state', valueMappings: [{ value: '0', text: 'Offline', color: 'red' }] })).toBe('Offline');
+    expect(metricColor(81, { field: 'cpu', thresholds: [{ operator: 'gte', value: '80', color: 'red' }] })).toBe('red');
+  });
+
+  it('selects metadata rows by variable value before row index fallback', () => {
+    const rows = [{ id: 'a', value: 1 }, { id: 'b', value: 2 }];
+    expect(selectMetadataRow(rows, { rowIndex: 0, metadataSelectorField: 'id', metadataSelectorValue: '$asset' }, (value) => value.replace('$asset', 'b'))?.value).toBe(2);
+    expect(selectMetadataRow(rows, { rowIndex: 1, metadataSelectorField: 'id', metadataSelectorValue: 'missing' }, (value) => value)?.value).toBe(2);
+  });
+
+  it('parses trend values from arrays and delimited strings', () => {
+    expect(parseTrendValues('1, 2; 3 4')).toEqual([1, 2, 3, 4]);
+    expect(parseTrendValues([1, '2', null, 'x'])).toEqual([1, 2, 0]);
   });
 
   it('suggests common mappings and numeric metrics conservatively', () => {

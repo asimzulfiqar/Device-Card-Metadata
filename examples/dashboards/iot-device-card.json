@@ -5,6 +5,7 @@
       "title": "Sensor overview",
       "type": "asimzulfiqar-devicecard-panel",
       "options": {
+        "presentationMode": "fleet",
         "idField": "device_id",
         "titleField": "device_id",
         "subtitleField": "owner",
@@ -12,8 +13,8 @@
         "statusField": "status",
         "lastSeenField": "last_seen",
         "metrics": [
-          { "field": "battery", "label": "Battery", "unit": "percent", "decimals": 0 },
-          { "field": "temperature", "label": "Temperature", "unit": "celsius", "decimals": 1 }
+          { "field": "battery", "label": "Battery", "unit": "percent", "decimals": 0, "showTrend": true, "trendField": "battery_trend", "thresholds": [{ "operator": "lt", "value": "40", "color": "yellow" }] },
+          { "field": "temperature", "label": "Temperature", "unit": "celsius", "decimals": 1, "showTrend": true, "trendField": "temperature_trend", "thresholds": [{ "operator": "gte", "value": "60", "color": "red" }] }
         ],
         "statusRules": [
           { "operator": "equals", "value": "OK", "label": "Healthy", "color": "green" },
@@ -25,6 +26,7 @@
         "metricStyle": "tiles",
         "logoPlacement": "header-left",
         "statusPlacement": "below-title",
+        "maxEntities": 500,
         "cardTheme": "tinted",
         "accentStyle": "left",
         "showLogo": true,

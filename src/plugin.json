@@ -18,7 +18,12 @@
       { "name": "repository", "url": "https://github.com/asimzulfiqar/device-card-panel" },
       { "name": "raise issue", "url": "https://github.com/asimzulfiqar/device-card-panel/issues" }
     ],
-    "screenshots": [],
+    "screenshots": [
+      { "name": "Fleet overview", "path": "img/screenshots/fleet-overview.png" },
+      { "name": "Metadata detail", "path": "img/screenshots/metadata-detail.png" },
+      { "name": "Focused options editor", "path": "img/screenshots/options-editor.png" },
+      { "name": "Dark theme example", "path": "img/screenshots/dark-theme.png" }
+    ],
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },

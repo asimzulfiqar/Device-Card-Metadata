@@ -15,8 +15,24 @@
         "statusField": "status",
         "lastSeenField": "last_seen",
         "metrics": [
-          { "field": "battery", "label": "Battery", "unit": "percent", "decimals": 0 },
-          { "field": "temperature", "label": "Temperature", "unit": "celsius", "decimals": 1 }
+          {
+            "field": "battery",
+            "label": "Battery",
+            "unit": "percent",
+            "decimals": 0,
+            "showTrend": true,
+            "trendField": "battery_trend",
+            "thresholds": [{ "operator": "lt", "value": "40", "color": "yellow" }]
+          },
+          {
+            "field": "temperature",
+            "label": "Temperature",
+            "unit": "celsius",
+            "decimals": 1,
+            "showTrend": true,
+            "trendField": "temperature_trend",
+            "thresholds": [{ "operator": "gte", "value": "60", "color": "red" }]
+          }
         ],
         "statusRules": [
           { "operator": "equals", "value": "OK", "label": "Healthy", "color": "green" },
@@ -27,7 +43,7 @@
           { "field": "battery", "operator": "lt", "value": "40", "label": "Low battery", "color": "yellow" },
           { "field": "temperature", "operator": "gte", "value": "60", "label": "High temperature", "color": "red" }
         ],
-        "actions": [{ "label": "Details", "url": "d/device-detail?var-device_id={device_id}", "includeTimeRange": true }],
+        "actions": [{ "label": "Open metadata", "url": "/d/device-card-panel-examples/device-card-panel-examples?viewPanel=3&var-device_id={device_id}", "includeTimeRange": true }],
         "mode": "grid",
         "layout": "detailed",
         "orientation": "vertical",
@@ -43,6 +59,7 @@
         "sortBy": "status",
         "sortDirection": "desc",
         "pageSize": 24,
+        "maxEntities": 500,
         "setupProfile": "iot",
         "showDiagnostics": true,
         "showLogo": true,
@@ -63,7 +80,7 @@
           "datasource": { "type": "grafana-testdata-datasource", "uid": "trlxrdZVk" },
           "refId": "A",
           "scenarioId": "raw_frame",
-          "rawFrameContent": "[{\"schema\":{\"fields\":[{\"name\":\"device_id\",\"type\":\"string\"},{\"name\":\"owner\",\"type\":\"string\"},{\"name\":\"location\",\"type\":\"string\"},{\"name\":\"status\",\"type\":\"string\"},{\"name\":\"battery\",\"type\":\"number\"},{\"name\":\"temperature\",\"type\":\"number\"},{\"name\":\"last_seen\",\"type\":\"time\"}]},\"data\":{\"values\":[[\"sensor-001\",\"gateway-002\",\"pump-003\"],[\"Facilities\",\"Platform\",\"Operations\"],[\"Berlin plant\",\"Edge network\",\"Cooling loop\"],[\"OK\",\"OK\",\"WARN\"],[92,67,34],[21.8,48.2,63.4],[1760000000000,1760000000000,1760000000000]]}}]"
+          "rawFrameContent": "[{\"schema\":{\"fields\":[{\"name\":\"device_id\",\"type\":\"string\"},{\"name\":\"owner\",\"type\":\"string\"},{\"name\":\"location\",\"type\":\"string\"},{\"name\":\"status\",\"type\":\"string\"},{\"name\":\"battery\",\"type\":\"number\"},{\"name\":\"temperature\",\"type\":\"number\"},{\"name\":\"battery_trend\",\"type\":\"string\"},{\"name\":\"temperature_trend\",\"type\":\"string\"},{\"name\":\"last_seen\",\"type\":\"time\"}]},\"data\":{\"values\":[[\"sensor-001\",\"gateway-002\",\"pump-003\"],[\"Facilities\",\"Platform\",\"Operations\"],[\"Berlin plant\",\"Edge network\",\"Cooling loop\"],[\"OK\",\"OK\",\"WARN\"],[92,67,34],[21.8,48.2,63.4],[\"88,90,91,93,92\",\"59,61,65,68,67\",\"52,45,40,37,34\"],[\"20,21,22,22,21.8\",\"40,42,44,46,48.2\",\"55,58,61,62,63.4\"],[1760000000000,1760000000000,1760000000000]]}}]"
         }
       ],
       "title": "Device fleet",
@@ -89,6 +106,8 @@
         "mode": "single",
         "layout": "metadata",
         "rowIndex": 0,
+        "metadataSelectorField": "objektkennzahl",
+        "metadataSelectorValue": "$device_id",
         "metadataColumns": 4,
         "metadataSections": [
           {

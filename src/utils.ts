@@ -1,5 +1,5 @@
 import { DataFrame, Field, FieldType, getValueFormat, GrafanaTheme2 } from '@grafana/data';
-import { BuiltInIcon, CompositeRule, CustomField, DeviceCardOptions, MetadataRow, MetricMapping, SetupProfile, StatusRule } from './types';
+import { BuiltInIcon, CompositeRule, CustomField, DeviceCardOptions, MetadataRow, MetadataSection, MetricMapping, SetupProfile, StatusRule, ValueMapping } from './types';
 
 export type CardValues = Record<string, unknown>;
 
@@ -146,9 +146,26 @@ export function compositeStatus(values: CardValues, rules: CompositeRule[]) {
   return worst ? { ...worst, reason: worst.label || `${worst.field} ${worst.operator} ${worst.value}` } : undefined;
 }
 
+function mappedValue(value: unknown, mappings: ValueMapping[] = []): ValueMapping | undefined {
+  return mappings.find((mapping) => String(value) === mapping.value);
+}
+
+export function metricColor(value: unknown, mapping: MetricMapping): string | undefined {
+  const mapped = mappedValue(value, mapping.valueMappings);
+  if (mapped?.color) {
+    return mapped.color;
+  }
+  const threshold = (mapping.thresholds ?? []).find((rule) => statusFor(value, [{ ...rule }]));
+  return threshold?.color;
+}
+
 export function formatMetric(value: unknown, mapping: MetricMapping, field?: Field): string {
   if (value === null || value === undefined || value === '' || (typeof value === 'number' && Number.isNaN(value))) {
     return '-';
+  }
+  const mapped = mappedValue(value, mapping.valueMappings);
+  if (mapped) {
+    return mapped.text;
   }
   if (typeof value !== 'number') {
     return String(value);
@@ -173,6 +190,109 @@ export function formatMetadataValue(value: unknown, row: MetadataRow, field?: Fi
 export function substituteUrl(template: string, values: CardValues): string {
   return template.replace(/\{([^}]+)\}/g, (_, name) => encodeURIComponent(String(values[name] ?? '')));
 }
+
+export function safeActionUrl(url: string): string | undefined {
+  const trimmed = url.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+  if (/^(javascript|data|vbscript):/i.test(trimmed)) {
+    return undefined;
+  }
+  if (/^(https?:)?\/\//i.test(trimmed) || trimmed.startsWith('/') || /^[A-Za-z0-9_.~-]/.test(trimmed)) {
+    return trimmed;
+  }
+  return undefined;
+}
+
+export function selectMetadataRow(rows: CardValues[], options: Pick<DeviceCardOptions, 'rowIndex' | 'metadataSelectorField' | 'metadataSelectorValue'>, replaceVariables: (value: string) => string): CardValues | undefined {
+  const selectorField = options.metadataSelectorField;
+  const selectorValue = replaceVariables(options.metadataSelectorValue ?? '');
+  if (selectorField && selectorValue) {
+    const selected = rows.find((row) => String(row[selectorField]) === selectorValue);
+    if (selected) {
+      return selected;
+    }
+  }
+  return rows[Math.max(0, options.rowIndex ?? 0)] ?? rows[0];
+}
+
+export function parseTrendValues(value: unknown): number[] {
+  if (Array.isArray(value)) {
+    return value.map(Number).filter(Number.isFinite);
+  }
+  if (typeof value === 'string') {
+    return value.split(/[,;\s]+/).map(Number).filter(Number.isFinite);
+  }
+  return [];
+}
+
+export const metadataTemplates: Record<string, MetadataSection[]> = {
+  asset: [
+    { title: 'Identification', rows: [
+      { kind: 'field', field: 'asset_id', label: 'Asset ID', highlight: true },
+      { kind: 'field', field: 'name', label: 'Name' },
+      { kind: 'field', field: 'owner', label: 'Owner' },
+      { kind: 'field', field: 'location', label: 'Location' },
+    ] },
+    { title: 'Lifecycle', rows: [
+      { kind: 'field', field: 'status', label: 'Status', highlight: true },
+      { kind: 'field', field: 'installed_at', label: 'Installed at' },
+      { kind: 'field', field: 'serial_number', label: 'Serial number' },
+    ] },
+  ],
+  iot: [
+    { title: 'Device', rows: [
+      { kind: 'field', field: 'device_id', label: 'Device ID', highlight: true },
+      { kind: 'field', field: 'owner', label: 'Owner' },
+      { kind: 'field', field: 'location', label: 'Location' },
+      { kind: 'field', field: 'last_seen', label: 'Last seen' },
+    ] },
+    { title: 'Telemetry', rows: [
+      { kind: 'field', field: 'battery', label: 'Battery', unit: '%', decimals: 0, highlight: true },
+      { kind: 'field', field: 'temperature', label: 'Temperature', unit: 'celsius', decimals: 1 },
+      { kind: 'field', field: 'rssi', label: 'RSSI', unit: 'dBm', decimals: 0 },
+    ] },
+  ],
+  service: [
+    { title: 'Service', rows: [
+      { kind: 'field', field: 'service', label: 'Service', highlight: true },
+      { kind: 'field', field: 'team', label: 'Team' },
+      { kind: 'field', field: 'environment', label: 'Environment' },
+      { kind: 'field', field: 'status', label: 'Status', highlight: true },
+    ] },
+    { title: 'SLO', rows: [
+      { kind: 'field', field: 'latency_ms', label: 'Latency', unit: 'ms', decimals: 0 },
+      { kind: 'field', field: 'error_rate', label: 'Error rate', unit: 'percentunit', decimals: 2 },
+      { kind: 'field', field: 'availability', label: 'Availability', unit: 'percent', decimals: 2 },
+    ] },
+  ],
+  water: [
+    { title: 'Identifikation und Lage', rows: [
+      { kind: 'field', field: 'objektkennzahl', label: 'Objektkennzahl' },
+      { kind: 'field', field: 'brunnenbezeichnung', label: 'Brunnenbezeichnung', highlight: true },
+      { kind: 'field', field: 'betreiber', label: 'Betreiber' },
+      { kind: 'field', field: 'koordinaten', label: 'Koordinaten', highlight: true },
+      { kind: 'field', field: 'landkreis', label: 'Landkreis' },
+    ] },
+    { title: 'Wasserzähler', rows: [
+      { kind: 'field', field: 'zaehler_modell', label: 'Modell' },
+      { kind: 'field', field: 'dn', label: 'Dn' },
+      { kind: 'subheading', label: 'Letzte Messwerte' },
+      { kind: 'field', field: 'entnahme_24h', label: 'Wasserentnahmen letzte 24h', unit: 'm³', decimals: 1 },
+      { kind: 'field', field: 'erlaubte_entnahme', label: 'Erlaubte Gesamtentnahme', unit: 'm³', decimals: 0, highlight: true },
+    ] },
+    { title: 'Pegelsonde', rows: [
+      { kind: 'field', field: 'tiefe', label: 'Tiefe', unit: 'm', decimals: 1 },
+      { kind: 'field', field: 'pegelstand', label: 'Letzter Pegelstand', unit: 'm ü. NHN', decimals: 1, highlight: true },
+    ] },
+    { title: 'Funkeinheit', rows: [
+      { kind: 'field', field: 'funk_modell', label: 'Modell' },
+      { kind: 'field', field: 'funk_geraetenummer', label: 'Gerätenummer' },
+      { kind: 'field', field: 'batteriestand', label: 'Batteriestand', unit: '%', decimals: 0, emptyText: '-' },
+    ] },
+  ],
+};
 
 type Token = { type: 'number' | 'string' | 'identifier' | 'punctuation'; value: string };
 
