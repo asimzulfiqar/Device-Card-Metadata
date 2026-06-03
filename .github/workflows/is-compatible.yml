@@ -17,7 +17,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - uses: grafana/plugin-actions/is-compatible@is-compatible/v1.0.2
+      - uses: grafana/plugin-actions/is-compatible@is-compatible/v1.0.3
         with:
           module: src/module.ts
           comment-pr: "no"
