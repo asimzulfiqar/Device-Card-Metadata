@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StandardEditorProps } from '@grafana/data';
 import { Button, Combobox, Field, Input, Switch, TextArea } from '@grafana/ui';
-import { DateDisplay, DeviceCardOptions, MetadataRow, MetadataSection } from '../types';
+import { DeviceCardOptions, MetadataRow, MetadataSection } from '../types';
 import { metadataTemplates } from '../utils';
 
 const newRow = (): MetadataRow => ({ kind: 'field', field: '', label: '' });
@@ -98,24 +98,17 @@ export const MetadataSectionsEditor = ({ value = [], onChange, context }: Standa
           <Field label={row.kind === 'subheading' ? 'Subheading text' : 'Display label'}><Input value={row.label} onChange={(event) => updateRow(sectionIndex, rowIndex, { label: event.currentTarget.value })} /></Field>
           {row.kind === 'field' && <>
             <Field label="Source field"><Combobox isClearable options={fieldOptions} value={row.field} onChange={(selected) => updateRow(sectionIndex, rowIndex, { field: selected?.value ?? '' })} /></Field>
-            <Field label="Unit override"><Input value={row.unit ?? ''} placeholder="inherit" onChange={(event) => updateRow(sectionIndex, rowIndex, { unit: event.currentTarget.value })} /></Field>
-            <Field label="Decimals"><Input type="number" value={row.decimals ?? ''} onChange={(event) => updateRow(sectionIndex, rowIndex, { decimals: event.currentTarget.value === '' ? undefined : Number(event.currentTarget.value) })} /></Field>
-            <Field label="Date/time display" description="Use for Grafana time fields or values that contain a date/time.">
-              <Combobox
-                isClearable
-                options={[{ label: 'Date only', value: 'date' }, { label: 'Date and time', value: 'datetime' }, { label: 'Custom format', value: 'custom' }]}
-                value={row.dateDisplay}
-                onChange={(selected) => updateRow(sectionIndex, rowIndex, { dateDisplay: selected?.value as DateDisplay | undefined })}
-              />
+            <Field label="Unit override" description="Use time: followed by a format for dates, for example time:DD.MM.YYYY or time:YYYY-MM-DD HH:mm.">
+              <Input value={row.unit ?? ''} placeholder="inherit" onChange={(event) => updateRow(sectionIndex, rowIndex, { unit: event.currentTarget.value })} />
             </Field>
-            {row.dateDisplay === 'custom' && <Field label="Custom date format" description="Supported tokens: YYYY, MM, DD, HH, mm, ss"><Input value={row.dateFormat ?? ''} placeholder="DD.MM.YYYY HH:mm" onChange={(event) => updateRow(sectionIndex, rowIndex, { dateFormat: event.currentTarget.value })} /></Field>}
+            <Field label="Decimals"><Input type="number" value={row.decimals ?? ''} onChange={(event) => updateRow(sectionIndex, rowIndex, { decimals: event.currentTarget.value === '' ? undefined : Number(event.currentTarget.value) })} /></Field>
             <Field label="Empty value text"><Input value={row.emptyText ?? ''} placeholder="-" onChange={(event) => updateRow(sectionIndex, rowIndex, { emptyText: event.currentTarget.value })} /></Field>
             <Field label="Highlight value"><Switch value={row.highlight ?? false} onChange={(event) => updateRow(sectionIndex, rowIndex, { highlight: event.currentTarget.checked })} /></Field>
           </>}
-          <Button size="sm" variant="secondary" icon="copy" onClick={() => updateSection(sectionIndex, { rows: [...section.rows.slice(0, rowIndex + 1), { ...row }, ...section.rows.slice(rowIndex + 1)] })}>Duplicate row</Button>{' '}
-          <Button size="sm" variant="secondary" disabled={rowIndex === 0} onClick={() => updateSection(sectionIndex, { rows: move(section.rows, rowIndex, rowIndex - 1) })}>Move up</Button>{' '}
-          <Button size="sm" variant="secondary" disabled={rowIndex === section.rows.length - 1} onClick={() => updateSection(sectionIndex, { rows: move(section.rows, rowIndex, rowIndex + 1) })}>Move down</Button>{' '}
-          <Button size="sm" variant="secondary" icon="trash-alt" onClick={() => removeRow(sectionIndex, rowIndex)}>Remove row</Button>
+          <Button aria-label="Duplicate row" title="Duplicate row" size="sm" variant="secondary" icon="copy" onClick={() => updateSection(sectionIndex, { rows: [...section.rows.slice(0, rowIndex + 1), { ...row }, ...section.rows.slice(rowIndex + 1)] })} />{' '}
+          <Button aria-label="Move row up" title="Move row up" size="sm" variant="secondary" icon="arrow-up" disabled={rowIndex === 0} onClick={() => updateSection(sectionIndex, { rows: move(section.rows, rowIndex, rowIndex - 1) })} />{' '}
+          <Button aria-label="Move row down" title="Move row down" size="sm" variant="secondary" icon="arrow-down" disabled={rowIndex === section.rows.length - 1} onClick={() => updateSection(sectionIndex, { rows: move(section.rows, rowIndex, rowIndex + 1) })} />{' '}
+          <Button aria-label="Remove row" title="Remove row" size="sm" variant="secondary" icon="trash-alt" onClick={() => removeRow(sectionIndex, rowIndex)} />
         </div>)}
         <Button size="sm" variant="secondary" icon="plus" onClick={() => updateSection(sectionIndex, { rows: [...section.rows, newRow()] })}>Add row</Button>
       </>}

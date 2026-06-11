@@ -103,6 +103,6 @@ describe('device card utilities', () => {
     const date = new Date(2026, 5, 11, 14, 5, 9);
     expect(formatDateValue(date, 'custom', 'DD.MM.YYYY HH:mm:ss', 'de-DE')).toBe('11.06.2026 14:05:09');
     expect(formatDateValue(date, 'date', undefined, 'de-DE')).toBe('11.06.2026');
-    expect(formatMetadataValue(date, { kind: 'field', field: 'time', label: 'Time', dateDisplay: 'custom', dateFormat: 'YYYY-MM-DD' }, undefined, 'en-US')).toBe('2026-06-11');
+    expect(formatMetadataValue(date, { kind: 'field', field: 'time', label: 'Time', unit: 'time:YYYY-MM-DD' }, undefined, 'en-US')).toBe('2026-06-11');
   });
 });

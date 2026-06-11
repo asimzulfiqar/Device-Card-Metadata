@@ -228,8 +228,9 @@ export function formatMetadataValue(value: unknown, row: MetadataRow, field?: Fi
   if (value === null || value === undefined || value === '' || (typeof value === 'number' && Number.isNaN(value))) {
     return row.emptyText || '-';
   }
-  if (row.dateDisplay || field?.type === FieldType.time) {
-    return formatDateValue(value, row.dateDisplay ?? 'datetime', row.dateFormat, locale) ?? row.emptyText ?? '-';
+  const timeFormat = row.unit?.match(/^time:(.*)$/i)?.[1].trim();
+  if (timeFormat !== undefined || row.dateDisplay || field?.type === FieldType.time) {
+    return formatDateValue(value, timeFormat !== undefined ? 'custom' : row.dateDisplay ?? 'datetime', timeFormat || row.dateFormat, locale) ?? row.emptyText ?? '-';
   }
   const formatted = formatMetric(value, { field: row.field ?? '', decimals: row.decimals }, field, locale);
   return row.unit ? `${formatted} ${row.unit}` : formatted;
