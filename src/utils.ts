@@ -1,5 +1,5 @@
 import { DataFrame, Field, FieldType, getValueFormat, GrafanaTheme2 } from '@grafana/data';
-import { BuiltInIcon, CompositeRule, CustomField, DeviceCardOptions, MetadataRow, MetadataSection, MetricMapping, SetupProfile, StatusRule, ValueMapping } from './types';
+import { BuiltInIcon, CompositeRule, CustomField, DeviceCardOptions, MetadataRow, MetadataSection, MetricMapping, NumberLocale, SetupProfile, StatusRule, ValueMapping } from './types';
 
 export type CardValues = Record<string, unknown>;
 
@@ -159,7 +159,50 @@ export function metricColor(value: unknown, mapping: MetricMapping): string | un
   return threshold?.color;
 }
 
-export function formatMetric(value: unknown, mapping: MetricMapping, field?: Field): string {
+function numberFormatter(locale: NumberLocale, decimals?: number): Intl.NumberFormat {
+  return new Intl.NumberFormat(locale, decimals === undefined
+    ? { maximumFractionDigits: 20, useGrouping: true }
+    : { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: true });
+}
+
+function localizeFormattedNumber(text: string, locale: NumberLocale): string {
+  return text.replace(/-?\d+(?:\.\d+)?/, (numericText) => {
+    const decimals = numericText.includes('.') ? numericText.split('.')[1].length : 0;
+    return numberFormatter(locale, decimals).format(Number(numericText));
+  });
+}
+
+function dateFromValue(value: unknown): Date | undefined {
+  const date = value instanceof Date ? value : new Date(typeof value === 'number' ? value : String(value));
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+function customDateFormat(date: Date, format: string): string {
+  const parts: Record<string, string> = {
+    YYYY: String(date.getFullYear()),
+    MM: String(date.getMonth() + 1).padStart(2, '0'),
+    DD: String(date.getDate()).padStart(2, '0'),
+    HH: String(date.getHours()).padStart(2, '0'),
+    mm: String(date.getMinutes()).padStart(2, '0'),
+    ss: String(date.getSeconds()).padStart(2, '0'),
+  };
+  return format.replace(/YYYY|MM|DD|HH|mm|ss/g, (token) => parts[token]);
+}
+
+export function formatDateValue(value: unknown, display: MetadataRow['dateDisplay'], format: string | undefined, locale: NumberLocale): string | undefined {
+  const date = dateFromValue(value);
+  if (!date) {
+    return undefined;
+  }
+  if (display === 'custom') {
+    return customDateFormat(date, format || 'YYYY-MM-DD HH:mm:ss');
+  }
+  return display === 'date'
+    ? new Intl.DateTimeFormat(locale, { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date)
+    : new Intl.DateTimeFormat(locale, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(date);
+}
+
+export function formatMetric(value: unknown, mapping: MetricMapping, field?: Field, locale: NumberLocale = 'en-US'): string {
   if (value === null || value === undefined || value === '' || (typeof value === 'number' && Number.isNaN(value))) {
     return '-';
   }
@@ -174,16 +217,21 @@ export function formatMetric(value: unknown, mapping: MetricMapping, field?: Fie
   const unit = mapping.unit || field?.config.unit;
   if (!mapping.unit && mapping.decimals === undefined && field?.display) {
     const display = field.display(value);
-    return `${display.text}${display.suffix ? ` ${display.suffix}` : ''}`;
+    return `${localizeFormattedNumber(display.text, locale)}${display.suffix ? ` ${display.suffix}` : ''}`;
   }
-  return unit ? getValueFormat(unit)(value, decimals).text : value.toFixed(decimals ?? 2).replace(/\.?0+$/, '');
+  return unit
+    ? localizeFormattedNumber(getValueFormat(unit)(value, decimals).text, locale)
+    : numberFormatter(locale, decimals ?? undefined).format(value);
 }
 
-export function formatMetadataValue(value: unknown, row: MetadataRow, field?: Field): string {
+export function formatMetadataValue(value: unknown, row: MetadataRow, field?: Field, locale: NumberLocale = 'en-US'): string {
   if (value === null || value === undefined || value === '' || (typeof value === 'number' && Number.isNaN(value))) {
     return row.emptyText || '-';
   }
-  const formatted = formatMetric(value, { field: row.field ?? '', decimals: row.decimals }, field);
+  if (row.dateDisplay || field?.type === FieldType.time) {
+    return formatDateValue(value, row.dateDisplay ?? 'datetime', row.dateFormat, locale) ?? row.emptyText ?? '-';
+  }
+  const formatted = formatMetric(value, { field: row.field ?? '', decimals: row.decimals }, field, locale);
   return row.unit ? `${formatted} ${row.unit}` : formatted;
 }
 

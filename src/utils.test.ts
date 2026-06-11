@@ -2,6 +2,7 @@ import { FieldType } from '@grafana/data';
 import {
   compositeStatus,
   evaluateExpression,
+  formatDateValue,
   formatMetadataValue,
   formatMetric,
   metricColor,
@@ -91,5 +92,17 @@ describe('device card utilities', () => {
   it('formats metadata suffixes and missing values', () => {
     expect(formatMetadataValue(246.7, { kind: 'field', field: 'level', label: 'Level', unit: 'm ü. NHN', decimals: 1 })).toBe('246.7 m ü. NHN');
     expect(formatMetadataValue(Number.NaN, { kind: 'field', field: 'battery', label: 'Battery', emptyText: '-' })).toBe('-');
+  });
+  it('formats all numeric values with the selected locale and grouping', () => {
+    expect(formatMetric(1234.5, { field: 'value', decimals: 2 }, undefined, 'en-US')).toBe('1,234.50');
+    expect(formatMetric(1234.5, { field: 'value', decimals: 2 }, undefined, 'de-DE')).toBe('1.234,50');
+    expect(formatMetadataValue(1234.5, { kind: 'field', field: 'value', label: 'Value', decimals: 1 }, undefined, 'de-DE')).toBe('1.234,5');
+  });
+
+  it('formats dates as date, date-time, or a custom pattern', () => {
+    const date = new Date(2026, 5, 11, 14, 5, 9);
+    expect(formatDateValue(date, 'custom', 'DD.MM.YYYY HH:mm:ss', 'de-DE')).toBe('11.06.2026 14:05:09');
+    expect(formatDateValue(date, 'date', undefined, 'de-DE')).toBe('11.06.2026');
+    expect(formatMetadataValue(date, { kind: 'field', field: 'time', label: 'Time', dateDisplay: 'custom', dateFormat: 'YYYY-MM-DD' }, undefined, 'en-US')).toBe('2026-06-11');
   });
 });

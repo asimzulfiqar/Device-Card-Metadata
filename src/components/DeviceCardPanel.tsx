@@ -358,7 +358,7 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
           <div className={styles.metadataHeading}>{section.title}</div>
           {section.rows.map((row, rowIndex) => row.kind === 'subheading'
             ? <div className={styles.metadataSubheading} key={`${row.label}-${rowIndex}`}>{row.label}</div>
-            : <div className={styles.metadataRow} key={`${row.field}-${rowIndex}`}><span className={styles.metadataLabel}>{row.label || row.field}</span><span className={cx(styles.metadataValue, row.highlight && styles.metadataHighlight)}>{formatMetadataValue(values[row.field ?? ''], row, fieldByName(frame, row.field ?? ''))}</span></div>)}
+            : <div className={styles.metadataRow} key={`${row.field}-${rowIndex}`}><span className={styles.metadataLabel}>{row.label || row.field}</span><span className={cx(styles.metadataValue, row.highlight && styles.metadataHighlight)}>{formatMetadataValue(values[row.field ?? ''], row, fieldByName(frame, row.field ?? ''), option(options.numberLocale, 'en-US'))}</span></div>)}
         </section>)}
       </div>
     </div>;
@@ -455,7 +455,7 @@ export const DeviceCardPanel = ({ options, data, onOptionsChange, replaceVariabl
                   }).join(' ');
                   return <div className={cx(metricStyle === 'list' && styles.metricListItem, metricStyle === 'tiles' && styles.metricTile)} key={metric.field}>
                     <div className={styles.muted}>{metric.label || metric.field}</div>
-                    <div className={styles.metricValue} style={{ color: resolvedMetricColor }}>{formatMetric(values[metric.field], metric, fieldByName(frame, metric.field))}</div>
+                    <div className={styles.metricValue} style={{ color: resolvedMetricColor }}>{formatMetric(values[metric.field], metric, fieldByName(frame, metric.field), option(options.numberLocale, 'en-US'))}</div>
                     {points && <svg className={styles.trend} viewBox="0 0 100 100" preserveAspectRatio="none" aria-label={`${metric.label || metric.field} trend`}><polyline fill="none" stroke={resolvedMetricColor || theme.colors.text.link} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" points={points} /></svg>}
                   </div>;
                 })}</div>}

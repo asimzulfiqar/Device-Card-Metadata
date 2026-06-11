@@ -21,6 +21,7 @@ export const plugin = new PanelPlugin<DeviceCardOptions>(DeviceCardPanel)
   .setPanelOptions((builder) =>
     builder
     .addRadio({ path: 'presentationMode', name: 'Presentation mode', description: 'Choose a fleet overview or a single-asset metadata sheet. The editor only shows settings used by the selected mode.', defaultValue: 'fleet', settings: { options: [{ label: 'Fleet cards', value: 'fleet' }, { label: 'Metadata detail', value: 'metadata' }] } })
+    .addRadio({ path: 'numberLocale', name: 'Number format', category: ['Formatting'], description: 'Applies decimal and thousands separators to all numeric values.', defaultValue: 'en-US', settings: { options: [{ label: 'English (1,234.56)', value: 'en-US' }, { label: 'German (1.234,56)', value: 'de-DE' }] } })
     .addSelect({ path: 'setupProfile', name: 'Setup profile', category: ['Setup assistant'], defaultValue: 'iot', description: 'Used by the suggested-mapping button when a required ID field is missing.', showIf: fleetOnly, settings: { options: [{ label: 'IoT device', value: 'iot' }, { label: 'Service health', value: 'service' }, { label: 'Asset inventory', value: 'asset' }] } })
     .addBooleanSwitch({ path: 'showDiagnostics', name: 'Open diagnostics by default', category: ['Setup assistant'], defaultValue: false })
     .addCustomEditor({ id: 'idField', path: 'idField', name: 'Entity ID field', category: ['Field mapping'], description: 'Required. Primary identifier used as the card title fallback and in links.', editor: FieldSelectorEditor })

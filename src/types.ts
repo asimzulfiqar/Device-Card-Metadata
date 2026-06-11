@@ -14,6 +14,8 @@ export type StatusMode = 'mapped' | 'composite' | 'staleness';
 export type FleetSort = 'title' | 'status' | 'lastSeen' | 'metric';
 export type SortDirection = 'asc' | 'desc';
 export type SetupProfile = 'iot' | 'service' | 'asset';
+export type NumberLocale = 'en-US' | 'de-DE';
+export type DateDisplay = 'date' | 'datetime' | 'custom';
 
 export interface MetricMapping {
   field: string;
@@ -72,6 +74,8 @@ export interface MetadataRow {
   label: string;
   unit?: string;
   decimals?: number;
+  dateDisplay?: DateDisplay;
+  dateFormat?: string;
   highlight?: boolean;
   emptyText?: string;
 }
@@ -83,6 +87,7 @@ export interface MetadataSection {
 
 export interface DeviceCardOptions {
   presentationMode: PresentationMode;
+  numberLocale: NumberLocale;
   idField: string;
   titleField: string;
   subtitleField: string;
